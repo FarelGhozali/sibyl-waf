@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sibyl-WAF Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],mono:['Fira Code','monospace']}}}}
+</script>
+<style>
+body{background:#050a14;font-family:'Inter',sans-serif}
+.glass{background:rgba(17,24,39,.6);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.05)}
+.glow-g{box-shadow:0 0 20px rgba(16,185,129,.15)}
+.glow-r{box-shadow:0 0 20px rgba(239,68,68,.15)}
+.tglow-g{text-shadow:0 0 20px rgba(16,185,129,.5)}
+.tglow-r{text-shadow:0 0 20px rgba(239,68,68,.5)}
+.log-scroll::-webkit-scrollbar{width:4px}
+.log-scroll::-webkit-scrollbar-track{background:transparent}
+.log-scroll::-webkit-scrollbar-thumb{background:rgba(16,185,129,.3);border-radius:2px}
+@keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+</style>
+</head>
+<body class="text-gray-300 antialiased" x-data="dashboardApp()" x-init="init()">
+
+<!-- Toast -->
+<div class="fixed top-4 right-4 z-50 space-y-2">
+<template x-for="(t,i) in toasts" :key="i">
+<div x-show="t.show" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-x-8" x-transition:enter-end="opacity-100 translate-x-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0 translate-x-8" class="glass rounded-lg p-3 flex items-center gap-3 min-w-[280px]" :class="t.type==='danger'?'border-red-500/30':'border-emerald-500/30'">
+<span class="w-2 h-2 rounded-full animate-pulse" :class="t.type==='danger'?'bg-red-400':'bg-emerald-400'"></span>
+<span class="text-xs font-mono" x-text="t.msg"></span>
+</div>
+</template>
+</div>
+
+<div class="flex h-screen overflow-hidden">
+
+<!-- Sidebar -->
+<aside class="w-56 flex-shrink-0 glass border-r border-white/5 flex flex-col">
+<div class="p-4 border-b border-white/5">
+<a href="/" class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
+<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+</div>
+<span class="text-white font-bold text-sm">Sibyl<span class="text-emerald-400">-WAF</span></span>
+</a>
+</div>
+<nav class="flex-1 p-3 space-y-1">
+<template x-for="item in nav" :key="item.label">
+<a href="#" @click.prevent="currentTab=item.id" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors" :class="currentTab===item.id?'bg-emerald-500/10 text-emerald-400':'text-gray-500 hover:text-gray-300 hover:bg-white/5'">
+<span x-html="item.icon"></span>
+<span x-text="item.label"></span>
+</a>
+</template>
+</nav>
+<div class="p-4 border-t border-white/5">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+<span class="text-xs text-gray-600 font-mono">System Online</span>
+</div>
+</div>
+</aside>
+
+<!-- Main -->
+<div class="flex-1 flex flex-col overflow-hidden">
+
+<!-- Header -->
+<header class="h-14 flex-shrink-0 glass border-b border-white/5 flex items-center justify-between px-6">
+<div class="flex items-center gap-6">
+<h1 class="text-sm font-semibold text-white">Dashboard</h1>
+<div class="flex items-center gap-2 px-3 py-1 rounded-full" :class="crimeCoefficient>=75?'bg-red-500/10 border border-red-500/20':'bg-emerald-500/10 border border-emerald-500/20'">
+<span class="text-[10px] font-mono uppercase tracking-wider" :class="crimeCoefficient>=75?'text-red-400':'text-emerald-400'">Crime Coefficient</span>
+<span class="text-sm font-black font-mono" :class="crimeCoefficient>=75?'text-red-400 tglow-r':'text-emerald-400 tglow-g'" x-text="crimeCoefficient"></span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-xs text-gray-600 font-mono" x-text="currentTime"></span>
+<div class="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white">A</div>
+</div>
+</header>
+
+<!-- Content -->
+<main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+<!-- Stats Row -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+<template x-for="s in stats" :key="s.label">
+<div class="glass rounded-xl p-4">
+<p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-2" x-text="s.label"></p>
+<p class="text-2xl font-bold" :class="s.color" x-text="s.value"></p>
+<p class="text-[10px] mt-1" :class="s.trend>0?'text-emerald-400':'text-red-400'">
+<span x-text="s.trend>0?'↑':'↓'"></span> <span x-text="Math.abs(s.trend)+'%'"></span> <span class="text-gray-600">vs last hour</span>
+</p>
+</div>
+</template>
+</div>
+
+<!-- Charts Row -->
+<div class="grid lg:grid-cols-3 gap-4">
+<div class="lg:col-span-2 glass rounded-xl p-4">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-sm font-semibold text-white">Traffic Analysis</h2>
+<div class="flex gap-2">
+<template x-for="p in ['1H','6H','24H']" :key="p">
+<button @click="chartPeriod=p" class="px-2 py-0.5 rounded text-[10px] font-mono transition-colors" :class="chartPeriod===p?'bg-emerald-500/20 text-emerald-400':'text-gray-600 hover:text-gray-400'" x-text="p"></button>
+</template>
+</div>
+</div>
+<div style="position:relative;height:220px"><canvas id="trafficChart"></canvas></div>
+</div>
+<div class="glass rounded-xl p-4">
+<h2 class="text-sm font-semibold text-white mb-4">Threat Distribution</h2>
+<div style="position:relative;height:200px"><canvas id="threatChart"></canvas></div>
+<div class="mt-4 space-y-2">
+<template x-for="t in threatTypes" :key="t.name">
+<div class="flex items-center justify-between text-xs">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full" :style="'background:'+t.color"></span>
+<span class="text-gray-400" x-text="t.name"></span>
+</div>
+<span class="font-mono text-gray-500" x-text="t.count"></span>
+</div>
+</template>
+</div>
+</div>
+</div>
+
+<!-- Threat Log -->
+<div class="glass rounded-xl overflow-hidden">
+<div class="flex items-center justify-between px-4 py-3 border-b border-white/5">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-red-400 animate-pulse"></div>
+<h2 class="text-sm font-semibold text-white">Live Threat Log</h2>
+</div>
+<span class="text-[10px] font-mono text-gray-600" x-text="logs.length+' entries'"></span>
+</div>
+<div class="overflow-y-auto log-scroll" style="max-height:320px">
+<table class="w-full text-xs font-mono">
+<thead class="sticky top-0" style="background:#0d1321">
+<tr class="text-gray-600 text-left">
+<th class="px-4 py-2 font-medium">TIME</th>
+<th class="px-4 py-2 font-medium">IP</th>
+<th class="px-4 py-2 font-medium">METHOD</th>
+<th class="px-4 py-2 font-medium">PATH</th>
+<th class="px-4 py-2 font-medium">SCORE</th>
+<th class="px-4 py-2 font-medium">STATUS</th>
+<th class="px-4 py-2 font-medium">REASON</th>
+</tr>
+</thead>
+<tbody>
+<template x-for="(log,i) in logs" :key="i">
+<tr class="border-t border-white/[.03] hover:bg-white/[.02] transition-colors" x-show="log.visible" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+<td class="px-4 py-2 text-gray-500" x-text="log.time"></td>
+<td class="px-4 py-2 text-cyan-400" x-text="log.ip"></td>
+<td class="px-4 py-2" :class="log.method==='POST'?'text-yellow-400':'text-gray-400'" x-text="log.method"></td>
+<td class="px-4 py-2 text-gray-300" x-text="log.path"></td>
+<td class="px-4 py-2 font-bold" :class="log.score>=75?'text-red-400':'text-emerald-400'" x-text="log.score"></td>
+<td class="px-4 py-2"><span class="px-1.5 py-0.5 rounded text-[10px]" :class="log.status==='BLOCKED'?'bg-red-500/10 text-red-400':'bg-emerald-500/10 text-emerald-400'" x-text="log.status"></span></td>
+<td class="px-4 py-2 text-gray-500 max-w-[200px] truncate" x-text="log.reason"></td>
+</tr>
+</template>
+</tbody>
+</table>
+</div>
+</div>
+
+</main>
+</div>
+</div>
+
+<script>
+function dashboardApp(){
+return{
+currentTab:'overview',
+chartPeriod:'6H',
+crimeCoefficient:42,
+currentTime:'',
+toasts:[],
+nav:[
+{id:'overview',label:'Overview',icon:'<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z"/></svg>'},
+{id:'threats',label:'Threats',icon:'<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>'},
+{id:'analytics',label:'Analytics',icon:'<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>'},
+{id:'settings',label:'Settings',icon:'<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>'}
+],
+stats:[
+{label:'Total Evaluated',value:'12,847',color:'text-white',trend:12},
+{label:'Threats Blocked',value:'342',color:'text-red-400',trend:8},
+{label:'Cache Hit Rate',value:'67%',color:'text-cyan-400',trend:3},
+{label:'Avg Latency',value:'84ms',color:'text-emerald-400',trend:-5}
+],
+threatTypes:[
+{name:'SQL Injection',count:142,color:'#ef4444'},
+{name:'XSS',count:89,color:'#f59e0b'},
+{name:'Path Traversal',count:67,color:'#8b5cf6'},
+{name:'RCE',count:44,color:'#06b6d4'}
+],
+logs:[],
+init(){
+this.updateTime();
+setInterval(()=>this.updateTime(),1000);
+this.generateLogs();
+setInterval(()=>this.addLog(),4000);
+setTimeout(()=>{this.initTrafficChart();this.initThreatChart()},500);
+setTimeout(()=>this.showToast('System initialized. Monitoring active.','safe'),1500);
+},
+updateTime(){
+const d=new Date();
+this.currentTime=d.toLocaleTimeString('en-US',{hour12:false})+' UTC';
+},
+showToast(msg,type){
+const t={msg,type,show:true};
+this.toasts.push(t);
+setTimeout(()=>t.show=false,3000);
+setTimeout(()=>this.toasts=this.toasts.filter(x=>x!==t),3500);
+},
+generateLogs(){
+const ips=['192.168.1.'+Math.floor(Math.random()*255),'10.0.0.'+Math.floor(Math.random()*255),'172.16.0.'+Math.floor(Math.random()*255),'45.33.32.156','104.248.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255)];
+const paths=['/api/login','/api/users','/api/admin','/api/search?q=test','/api/upload','/api/config','/wp-admin','/api/data'];
+const methods=['GET','POST','PUT','DELETE'];
+const threats=[
+{s:95,st:'BLOCKED',r:'SQL Injection detected in password field'},
+{s:88,st:'BLOCKED',r:'XSS payload in query parameter'},
+{s:92,st:'BLOCKED',r:'Path traversal attempt: ../../etc/passwd'},
+{s:12,st:'PASSED',r:'Normal authentication request'},
+{s:5,st:'PASSED',r:'Standard API call, no threat indicators'},
+{s:78,st:'BLOCKED',r:'Remote code execution attempt via eval()'},
+{s:8,st:'PASSED',r:'Legitimate search query'},
+{s:85,st:'BLOCKED',r:'Command injection in user-agent header'},
+{s:3,st:'PASSED',r:'Health check endpoint'},
+{s:91,st:'BLOCKED',r:'Encoded SQLi bypass attempt detected'},
+{s:15,st:'PASSED',r:'Normal form submission'},
+{s:82,st:'BLOCKED',r:'Directory enumeration attempt'}
+];
+for(let i=0;i<15;i++){
+const t=threats[Math.floor(Math.random()*threats.length)];
+const h=String(Math.floor(Math.random()*24)).padStart(2,'0');
+const m=String(Math.floor(Math.random()*60)).padStart(2,'0');
+const s=String(Math.floor(Math.random()*60)).padStart(2,'0');
+this.logs.push({time:h+':'+m+':'+s,ip:ips[Math.floor(Math.random()*ips.length)],method:methods[Math.floor(Math.random()*methods.length)],path:paths[Math.floor(Math.random()*paths.length)],score:t.s,status:t.st,reason:t.r,visible:true});
+}
+this.logs.sort((a,b)=>b.time.localeCompare(a.time));
+},
+addLog(){
+const ips=['203.0.113.'+Math.floor(Math.random()*255),'198.51.100.'+Math.floor(Math.random()*255)];
+const paths=['/api/login','/api/admin','/api/users','/api/search'];
+const methods=['GET','POST'];
+const threats=[
+{s:93,st:'BLOCKED',r:'SQL Injection: UNION SELECT attack'},
+{s:87,st:'BLOCKED',r:'Reflected XSS in search parameter'},
+{s:6,st:'PASSED',r:'Normal GET request'},
+{s:79,st:'BLOCKED',r:'Base64 encoded RCE payload detected'}
+];
+const t=threats[Math.floor(Math.random()*threats.length)];
+const d=new Date();
+const time=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+const log={time,ip:ips[Math.floor(Math.random()*ips.length)],method:methods[Math.floor(Math.random()*methods.length)],path:paths[Math.floor(Math.random()*paths.length)],score:t.s,status:t.st,reason:t.r,visible:true};
+this.logs.unshift(log);
+if(this.logs.length>50)this.logs.pop();
+if(t.st==='BLOCKED'){
+this.showToast('⚠ Threat blocked from '+log.ip,'danger');
+this.crimeCoefficient=Math.min(100,this.crimeCoefficient+Math.floor(Math.random()*8));
+}else{
+this.crimeCoefficient=Math.max(10,this.crimeCoefficient-Math.floor(Math.random()*3));
+}
+},
+initTrafficChart(){
+const ctx=document.getElementById('trafficChart');
+if(!ctx)return;
+const labels=['00:00','02:00','04:00','06:00','08:00','10:00','12:00','14:00','16:00','18:00','20:00','22:00'];
+new Chart(ctx,{type:'line',data:{labels,datasets:[
+{label:'Total Requests',data:[120,98,85,110,245,380,420,510,480,390,310,180],borderColor:'#06b6d4',backgroundColor:'rgba(6,182,212,.08)',fill:true,tension:.4,borderWidth:2,pointRadius:0,pointHoverRadius:4},
+{label:'Blocked',data:[5,3,2,8,22,35,28,42,38,25,18,12],borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.05)',fill:true,tension:.4,borderWidth:2,pointRadius:0,pointHoverRadius:4}
+]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{display:true,labels:{color:'#6b7280',font:{size:10,family:'Inter'},boxWidth:12,padding:16}}},scales:{x:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#4b5563',font:{size:10,family:'Fira Code'}}},y:{grid:{color:'rgba(255,255,255,.03)'},ticks:{color:'#4b5563',font:{size:10,family:'Fira Code'}}}}}});
+},
+initThreatChart(){
+const ctx=document.getElementById('threatChart');
+if(!ctx)return;
+new Chart(ctx,{type:'doughnut',data:{labels:this.threatTypes.map(t=>t.name),datasets:[{data:this.threatTypes.map(t=>t.count),backgroundColor:this.threatTypes.map(t=>t.color),borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false}}}});
+}
+}
+}
+</script>
+</body>
+</html>
