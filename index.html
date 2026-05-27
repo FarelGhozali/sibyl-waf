@@ -1,302 +1,808 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" class="scroll-smooth">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sibyl-WAF — Cognitive Web Application Firewall</title>
-    <meta name="description" content="Sibyl-WAF: AI-Driven Cognitive Web Application Firewall Layer 7. Zero-Day Protection powered by Gemini LLM. Deterministic Gatekeeper for your infrastructure.">
+    <meta
+      name="description"
+      content="Sibyl-WAF: AI-Driven Cognitive Web Application Firewall Layer 7. Zero-Day Protection powered by Gemini LLM. Deterministic Gatekeeper for your infrastructure."
+    />
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine Plugins -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"
+    ></script>
     <!-- Alpine Core -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace'],
-                    },
-                    colors: {
-                        sibyl: {
-                            green: '#10b981',
-                            red: '#ef4444',
-                            cyan: '#06b6d4',
-                            dark: '#0a0f1a',
-                            card: '#111827',
-                        }
-                    },
-                    animation: {
-                        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'scan': 'scan 4s linear infinite',
-                        'fade-up': 'fadeUp 0.8s ease-out forwards',
-                    },
-                    keyframes: {
-                        pulseGlow: {
-                            '0%, 100%': { opacity: '0.4' },
-                            '50%': { opacity: '1' },
-                        },
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        },
-                        scan: {
-                            '0%': { transform: 'translateY(-100%)' },
-                            '100%': { transform: 'translateY(100%)' },
-                        },
-                        fadeUp: {
-                            '0%': { opacity: '0', transform: 'translateY(30px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+              mono: ["Fira Code", "monospace"],
+            },
+            colors: {
+              sibyl: {
+                green: "#10b981",
+                red: "#ef4444",
+                cyan: "#06b6d4",
+                dark: "#0a0f1a",
+                card: "#111827",
+              },
+            },
+            animation: {
+              "pulse-glow": "pulseGlow 3s ease-in-out infinite",
+              float: "float 6s ease-in-out infinite",
+              scan: "scan 4s linear infinite",
+              "fade-up": "fadeUp 0.8s ease-out forwards",
+            },
+            keyframes: {
+              pulseGlow: {
+                "0%, 100%": { opacity: "0.4" },
+                "50%": { opacity: "1" },
+              },
+              float: {
+                "0%, 100%": { transform: "translateY(0px)" },
+                "50%": { transform: "translateY(-20px)" },
+              },
+              scan: {
+                "0%": { transform: "translateY(-100%)" },
+                "100%": { transform: "translateY(100%)" },
+              },
+              fadeUp: {
+                "0%": { opacity: "0", transform: "translateY(30px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+            },
+          },
+        },
+      };
     </script>
     <style>
-        body { background-color: #050a14; }
-        .glass { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); }
-        .glass-strong { background: rgba(17, 24, 39, 0.8); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); }
-        .glow-green { box-shadow: 0 0 20px rgba(16,185,129,0.15), 0 0 60px rgba(16,185,129,0.05); }
-        .glow-red { box-shadow: 0 0 20px rgba(239,68,68,0.15), 0 0 60px rgba(239,68,68,0.05); }
-        .glow-cyan { box-shadow: 0 0 20px rgba(6,182,212,0.15), 0 0 60px rgba(6,182,212,0.05); }
-        .text-glow-green { text-shadow: 0 0 20px rgba(16,185,129,0.5); }
-        .text-glow-red { text-shadow: 0 0 20px rgba(239,68,68,0.5); }
-        .text-glow-cyan { text-shadow: 0 0 20px rgba(6,182,212,0.5); }
-        .gradient-border { position: relative; }
-        .gradient-border::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(6,182,212,0.1), rgba(239,68,68,0.3)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
-        .grid-bg { background-image: linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.03) 1px, transparent 1px); background-size: 60px 60px; }
-        .hero-gradient { background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16,185,129,0.12), transparent), radial-gradient(ellipse 60% 40% at 80% 50%, rgba(6,182,212,0.06), transparent), radial-gradient(ellipse 60% 40% at 20% 50%, rgba(239,68,68,0.04), transparent); }
-        @keyframes typing { from { width: 0 } to { width: 100% } }
-        .scanline { position: absolute; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, rgba(16,185,129,0.3), transparent); }
+      body {
+        background-color: #050a14;
+      }
+      .glass {
+        background: rgba(17, 24, 39, 0.6);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .glass-strong {
+        background: rgba(17, 24, 39, 0.8);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .glow-green {
+        box-shadow:
+          0 0 20px rgba(16, 185, 129, 0.15),
+          0 0 60px rgba(16, 185, 129, 0.05);
+      }
+      .glow-red {
+        box-shadow:
+          0 0 20px rgba(239, 68, 68, 0.15),
+          0 0 60px rgba(239, 68, 68, 0.05);
+      }
+      .glow-cyan {
+        box-shadow:
+          0 0 20px rgba(6, 182, 212, 0.15),
+          0 0 60px rgba(6, 182, 212, 0.05);
+      }
+      .text-glow-green {
+        text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+      }
+      .text-glow-red {
+        text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+      }
+      .text-glow-cyan {
+        text-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+      }
+      .gradient-border {
+        position: relative;
+      }
+      .gradient-border::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(
+          135deg,
+          rgba(16, 185, 129, 0.3),
+          rgba(6, 182, 212, 0.1),
+          rgba(239, 68, 68, 0.3)
+        );
+        -webkit-mask:
+          linear-gradient(#fff 0 0) content-box,
+          linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+      }
+      .grid-bg {
+        background-image:
+          linear-gradient(rgba(16, 185, 129, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
+        background-size: 60px 60px;
+      }
+      .hero-gradient {
+        background:
+          radial-gradient(
+            ellipse 80% 50% at 50% -20%,
+            rgba(16, 185, 129, 0.12),
+            transparent
+          ),
+          radial-gradient(
+            ellipse 60% 40% at 80% 50%,
+            rgba(6, 182, 212, 0.06),
+            transparent
+          ),
+          radial-gradient(
+            ellipse 60% 40% at 20% 50%,
+            rgba(239, 68, 68, 0.04),
+            transparent
+          );
+      }
+      @keyframes typing {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+      .scanline {
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(16, 185, 129, 0.3),
+          transparent
+        );
+      }
     </style>
-</head>
-<body class="font-sans text-gray-300 antialiased overflow-x-hidden grid-bg" x-data="{ shown: false }" x-init="setTimeout(() => shown = true, 100)">
-
+  </head>
+  <body
+    class="font-sans text-gray-300 antialiased overflow-x-hidden grid-bg"
+    x-data="{ shown: false }"
+    x-init="setTimeout(() => shown = true, 100)"
+  >
     <!-- Nav -->
-    <nav class="fixed top-0 w-full z-50 glass-strong" x-data="{ mobileMenuOpen: false }">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] rounded-lg">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-shadow">
-                    <svg class="w-5 h-5 text-white" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
-                </div>
-                <span class="text-white font-bold text-lg tracking-tight">Sibyl<span class="text-emerald-400">-WAF</span></span>
-            </a>
-            
-            <!-- Desktop Menu -->
-            <div class="hidden md:flex items-center gap-8">
-                <a href="#features" class="text-sm text-gray-400 hover:text-emerald-400 focus:outline-none focus:text-emerald-400 transition-colors">Features</a>
-                <a href="#architecture" class="text-sm text-gray-400 hover:text-emerald-400 focus:outline-none focus:text-emerald-400 transition-colors">Architecture</a>
-                <a href="#how-it-works" class="text-sm text-gray-400 hover:text-emerald-400 focus:outline-none focus:text-emerald-400 transition-colors">How It Works</a>
-                <a href="/dashboard" class="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-lg hover:from-emerald-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40">Dashboard →</a>
-            </div>
+    <nav
+      class="fixed top-0 w-full z-50 glass-strong"
+      x-data="{ mobileMenuOpen: false }"
+    >
+      <div
+        class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between"
+      >
+        <a
+          href="/"
+          class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] rounded-lg"
+        >
+          <div
+            class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-shadow"
+          >
+            <svg
+              class="w-5 h-5 text-white"
+              aria-hidden="true"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+              />
+            </svg>
+          </div>
+          <span class="text-white font-bold text-lg tracking-tight"
+            >Sibyl<span class="text-emerald-400">-WAF</span></span
+          >
+        </a>
 
-            <!-- Mobile Menu Button -->
-            <div class="md:hidden flex items-center">
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-400 hover:text-white focus:outline-none" aria-label="Toggle mobile menu">
-                    <svg class="w-6 h-6" aria-hidden="true" x-show="!mobileMenuOpen" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                    <svg class="w-6 h-6" aria-hidden="true" x-show="mobileMenuOpen" style="display: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center gap-8">
+          <a
+            href="#features"
+            class="text-sm text-gray-400 hover:text-emerald-400 focus:outline-none focus:text-emerald-400 transition-colors"
+            >Features</a
+          >
+          <a
+            href="#architecture"
+            class="text-sm text-gray-400 hover:text-emerald-400 focus:outline-none focus:text-emerald-400 transition-colors"
+            >Architecture</a
+          >
+          <a
+            href="#how-it-works"
+            class="text-sm text-gray-400 hover:text-emerald-400 focus:outline-none focus:text-emerald-400 transition-colors"
+            >How It Works</a
+          >
+          <a
+            href="/dashboard"
+            class="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-lg hover:from-emerald-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40"
+            >Dashboard →</a
+          >
         </div>
 
-        <!-- Mobile Menu Panel -->
-        <div x-show="mobileMenuOpen" x-collapse class="md:hidden border-t border-white/10 bg-[#050a14]/90 backdrop-blur-xl">
-            <div class="px-6 py-6 space-y-4 flex flex-col">
-                <a href="#features" @click="mobileMenuOpen = false" class="text-base font-medium text-gray-300 hover:text-emerald-400 transition-colors">Features</a>
-                <a href="#architecture" @click="mobileMenuOpen = false" class="text-base font-medium text-gray-300 hover:text-emerald-400 transition-colors">Architecture</a>
-                <a href="#how-it-works" @click="mobileMenuOpen = false" class="text-base font-medium text-gray-300 hover:text-emerald-400 transition-colors">How It Works</a>
-                <a href="/dashboard" class="mt-4 inline-block text-center px-4 py-3 text-base font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-500 hover:to-cyan-500">Dashboard →</a>
-            </div>
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden flex items-center">
+          <button
+            @click="mobileMenuOpen = !mobileMenuOpen"
+            class="text-gray-400 hover:text-white focus:outline-none"
+            aria-label="Toggle mobile menu"
+          >
+            <svg
+              class="w-6 h-6"
+              aria-hidden="true"
+              x-show="!mobileMenuOpen"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              ></path>
+            </svg>
+            <svg
+              class="w-6 h-6"
+              aria-hidden="true"
+              x-show="mobileMenuOpen"
+              style="display: none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
         </div>
+      </div>
+
+      <!-- Mobile Menu Panel -->
+      <div
+        x-show="mobileMenuOpen"
+        x-collapse
+        class="md:hidden border-t border-white/10 bg-[#050a14]/90 backdrop-blur-xl"
+      >
+        <div class="px-6 py-6 space-y-4 flex flex-col">
+          <a
+            href="#features"
+            @click="mobileMenuOpen = false"
+            class="text-base font-medium text-gray-300 hover:text-emerald-400 transition-colors"
+            >Features</a
+          >
+          <a
+            href="#architecture"
+            @click="mobileMenuOpen = false"
+            class="text-base font-medium text-gray-300 hover:text-emerald-400 transition-colors"
+            >Architecture</a
+          >
+          <a
+            href="#how-it-works"
+            @click="mobileMenuOpen = false"
+            class="text-base font-medium text-gray-300 hover:text-emerald-400 transition-colors"
+            >How It Works</a
+          >
+          <a
+            href="/dashboard"
+            class="mt-4 inline-block text-center px-4 py-3 text-base font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-500 hover:to-cyan-500"
+            >Dashboard →</a
+          >
+        </div>
+      </div>
     </nav>
 
-    <!-- Hero -->
-    <section class="relative min-h-screen flex items-center justify-center hero-gradient pt-16">
+    <main>
+      <!-- Hero -->
+      <section
+        class="relative min-h-screen flex items-center justify-center hero-gradient pt-16"
+      >
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="scanline animate-scan"></div>
+          <div class="scanline animate-scan"></div>
         </div>
-        <div class="max-w-5xl mx-auto px-6 text-center" x-show="shown" x-transition:enter="transition ease-out duration-1000" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
-            <!-- Badge -->
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-8">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                Powered by Google Gemini AI
-            </div>
-            <!-- Title -->
-            <h1 class="text-5xl md:text-7xl font-black text-white leading-tight tracking-tight mb-6">
-                Cognitive Firewall<br>
-                <span class="bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">for the AI Era</span>
-            </h1>
-            <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                Sibyl-WAF is an intent-based Layer 7 Web Application Firewall that leverages LLM reasoning to detect zero-day attacks before they reach your application.
-            </p>
-            <!-- CTA -->
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="/dashboard" id="cta-dashboard" class="group px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-emerald-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 flex items-center gap-2">
-                    Open Dashboard
-                    <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-                </a>
-                <a href="#architecture" class="px-8 py-3.5 text-gray-300 font-semibold rounded-xl border border-white/10 hover:border-emerald-500/30 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all">
-                    View Architecture
-                </a>
-            </div>
-            <!-- Crime Coefficient Preview -->
-            <div class="mt-16 glass rounded-2xl p-6 max-w-lg mx-auto glow-green gradient-border" x-data="{ score: 0 }" x-init="
+        <div
+          class="max-w-5xl mx-auto px-6 text-center"
+          x-show="shown"
+          x-transition:enter="transition ease-out duration-1000"
+          x-transition:enter-start="opacity-0 translate-y-8"
+          x-transition:enter-end="opacity-100 translate-y-0"
+        >
+          <!-- Badge -->
+          <div
+            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-8"
+          >
+            <span
+              class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+            ></span>
+            Powered by Google Gemini AI
+          </div>
+          <!-- Title -->
+          <h1
+            class="text-5xl md:text-7xl font-black text-white leading-tight tracking-tight mb-6"
+          >
+            Cognitive Firewall<br />
+            <span
+              class="bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent"
+              >for the AI Era</span
+            >
+          </h1>
+          <p
+            class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed"
+          >
+            Sibyl-WAF is an intent-based Layer 7 Web Application Firewall that
+            leverages LLM reasoning to detect zero-day attacks before they reach
+            your application.
+          </p>
+          <!-- CTA -->
+          <div
+            class="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <a
+              href="/dashboard"
+              id="cta-dashboard"
+              class="group px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-emerald-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 flex items-center gap-2"
+            >
+              Open Dashboard
+              <svg
+                class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                aria-hidden="true"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                />
+              </svg>
+            </a>
+            <a
+              href="#architecture"
+              class="px-8 py-3.5 text-gray-300 font-semibold rounded-xl border border-white/10 hover:border-emerald-500/30 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all"
+            >
+              View Architecture
+            </a>
+          </div>
+          <!-- Crime Coefficient Preview -->
+          <div
+            class="mt-16 glass rounded-2xl p-6 max-w-lg mx-auto glow-green gradient-border"
+            x-data="{ score: 0 }"
+            x-init="
                 let target = 42;
                 let interval = setInterval(() => {
                     if(score < target) { score++; } else { clearInterval(interval); }
                 }, 40);
-            ">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-xs text-gray-500 font-mono uppercase tracking-widest">Crime Coefficient</span>
-                    <span class="text-xs text-emerald-400 font-mono">STATUS: SAFE</span>
-                </div>
-                <div class="text-6xl font-black font-mono text-emerald-400 text-glow-green" x-text="score"></div>
-                <div class="mt-3 h-1.5 rounded-full bg-gray-800 overflow-hidden">
-                    <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-500" :style="'width:' + score + '%'"></div>
-                </div>
-                <p class="text-xs text-gray-500 mt-2 font-mono">Enforcement Mode: Non-Lethal Paralyzer</p>
+            "
+          >
+            <div class="flex items-center justify-between mb-3">
+              <span
+                class="text-xs text-gray-500 font-mono uppercase tracking-widest"
+                >Crime Coefficient</span
+              >
+              <span class="text-xs text-emerald-400 font-mono"
+                >STATUS: SAFE</span
+              >
             </div>
+            <div
+              class="text-6xl font-black font-mono text-emerald-400 text-glow-green"
+              x-text="score"
+            ></div>
+            <div class="mt-3 h-1.5 rounded-full bg-gray-800 overflow-hidden">
+              <div
+                class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-500"
+                :style="'width:' + score + '%'"
+              ></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2 font-mono">
+              Enforcement Mode: Non-Lethal Paralyzer
+            </p>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Features -->
-    <section id="features" class="py-32 relative" x-data="{ shown: false }" x-intersect.once="shown = true">
-        <div class="max-w-7xl mx-auto px-6" x-show="shown" x-transition:enter="transition ease-out duration-1000" x-transition:enter-start="opacity-0 translate-y-12" x-transition:enter-end="opacity-100 translate-y-0">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Why <span class="text-emerald-400">Sibyl-WAF</span>?</h2>
-                <p class="text-gray-500 max-w-xl mx-auto">Traditional WAFs rely on brittle regex rules. Sibyl thinks like an analyst.</p>
+      <!-- Features -->
+      <section
+        id="features"
+        class="py-32 relative"
+        x-data="{ shown: false }"
+        x-intersect.once="shown = true"
+      >
+        <div
+          class="max-w-7xl mx-auto px-6"
+          x-show="shown"
+          x-transition:enter="transition ease-out duration-1000"
+          x-transition:enter-start="opacity-0 translate-y-12"
+          x-transition:enter-end="opacity-100 translate-y-0"
+        >
+          <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+              Why <span class="text-emerald-400">Sibyl-WAF</span>?
+            </h2>
+            <p class="text-gray-500 max-w-xl mx-auto">
+              Traditional WAFs rely on brittle regex rules. Sibyl thinks like an
+              analyst.
+            </p>
+          </div>
+          <div class="grid md:grid-cols-3 gap-6">
+            <!-- Card 1 -->
+            <div
+              class="glass rounded-2xl p-8 hover:glow-green transition-shadow duration-500 gradient-border group"
+            >
+              <div
+                class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors"
+              >
+                <svg
+                  class="w-6 h-6 text-emerald-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">
+                AI-Driven Analysis
+              </h3>
+              <p class="text-gray-400 text-sm leading-relaxed">
+                Powered by Gemini LLM, every HTTP request is evaluated for
+                malicious intent using advanced natural language reasoning — not
+                pattern matching.
+              </p>
             </div>
-            <div class="grid md:grid-cols-3 gap-6">
-                <!-- Card 1 -->
-                <div class="glass rounded-2xl p-8 hover:glow-green transition-shadow duration-500 gradient-border group">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors">
-                        <svg class="w-6 h-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">AI-Driven Analysis</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Powered by Gemini LLM, every HTTP request is evaluated for malicious intent using advanced natural language reasoning — not pattern matching.</p>
-                </div>
-                <!-- Card 2 -->
-                <div class="glass rounded-2xl p-8 hover:glow-red transition-shadow duration-500 gradient-border group">
-                    <div class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-6 group-hover:bg-red-500/20 transition-colors">
-                        <svg class="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z"/></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Zero-Day Protection</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">No signature database to update. Sibyl understands attack semantics, catching novel exploits that traditional WAFs miss entirely.</p>
-                </div>
-                <!-- Card 3 -->
-                <div class="glass rounded-2xl p-8 hover:glow-cyan transition-shadow duration-500 gradient-border group">
-                    <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-6 group-hover:bg-cyan-500/20 transition-colors">
-                        <svg class="w-6 h-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Deterministic Gatekeeper</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed">Crime Coefficient scoring (0-100) provides a clear, numeric verdict. ≥75 means instant termination. No ambiguity, no false negatives.</p>
-                </div>
+            <!-- Card 2 -->
+            <div
+              class="glass rounded-2xl p-8 hover:glow-red transition-shadow duration-500 gradient-border group"
+            >
+              <div
+                class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-6 group-hover:bg-red-500/20 transition-colors"
+              >
+                <svg
+                  class="w-6 h-6 text-red-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286zm0 13.036h.008v.008H12v-.008z"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">
+                Zero-Day Protection
+              </h3>
+              <p class="text-gray-400 text-sm leading-relaxed">
+                No signature database to update. Sibyl understands attack
+                semantics, catching novel exploits that traditional WAFs miss
+                entirely.
+              </p>
             </div>
+            <!-- Card 3 -->
+            <div
+              class="glass rounded-2xl p-8 hover:glow-cyan transition-shadow duration-500 gradient-border group"
+            >
+              <div
+                class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-6 group-hover:bg-cyan-500/20 transition-colors"
+              >
+                <svg
+                  class="w-6 h-6 text-cyan-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+                  />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold text-white mb-3">
+                Deterministic Gatekeeper
+              </h3>
+              <p class="text-gray-400 text-sm leading-relaxed">
+                Crime Coefficient scoring (0-100) provides a clear, numeric
+                verdict. ≥75 means instant termination. No ambiguity, no false
+                negatives.
+              </p>
+            </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- Architecture -->
-    <section id="architecture" class="py-32 relative" x-data="{ shown: false }" x-intersect.once="shown = true">
-        <div class="max-w-6xl mx-auto px-6" x-show="shown" x-transition:enter="transition ease-out duration-1000" x-transition:enter-start="opacity-0 translate-y-12" x-transition:enter-end="opacity-100 translate-y-0">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Distributed <span class="text-cyan-400">Architecture</span></h2>
-                <p class="text-gray-500 max-w-xl mx-auto">Two microservices. Zero single point of failure. Full isolation.</p>
+      <!-- Architecture -->
+      <section
+        id="architecture"
+        class="py-32 relative"
+        x-data="{ shown: false }"
+        x-intersect.once="shown = true"
+      >
+        <div
+          class="max-w-6xl mx-auto px-6"
+          x-show="shown"
+          x-transition:enter="transition ease-out duration-1000"
+          x-transition:enter-start="opacity-0 translate-y-12"
+          x-transition:enter-end="opacity-100 translate-y-0"
+        >
+          <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+              Distributed <span class="text-cyan-400">Architecture</span>
+            </h2>
+            <p class="text-gray-500 max-w-xl mx-auto">
+              Two microservices. Zero single point of failure. Full isolation.
+            </p>
+          </div>
+          <div class="grid md:grid-cols-2 gap-8">
+            <!-- Proxy -->
+            <div class="glass rounded-2xl p-8 gradient-border">
+              <div class="flex items-center gap-3 mb-6">
+                <div
+                  class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"
+                ></div>
+                <span class="font-mono text-sm text-cyan-400 tracking-wider"
+                  >COMPONENT A</span
+                >
+              </div>
+              <h3 class="text-2xl font-bold text-white mb-2">Sibyl-Proxy</h3>
+              <p class="text-sm text-gray-500 mb-6">Home Server / Edge</p>
+              <ul class="space-y-3 text-sm text-gray-400">
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 mt-0.5">▹</span> Golang reverse
+                  proxy via
+                  <code
+                    class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                    >net/http/httputil</code
+                  >
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 mt-0.5">▹</span> Intercepts
+                  private routes from Nginx/Cloudflare
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 mt-0.5">▹</span> In-memory
+                  caching via
+                  <code
+                    class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                    >sync.Map</code
+                  >
+                  (300s TTL)
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 mt-0.5">▹</span> Strict
+                  <code
+                    class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                    >context.WithTimeout</code
+                  >
+                  (1500ms)
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 mt-0.5">▹</span> 2MB payload
+                  limit via
+                  <code
+                    class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                    >io.LimitReader</code
+                  >
+                </li>
+              </ul>
             </div>
-            <div class="grid md:grid-cols-2 gap-8">
-                <!-- Proxy -->
-                <div class="glass rounded-2xl p-8 gradient-border">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"></div>
-                        <span class="font-mono text-sm text-cyan-400 tracking-wider">COMPONENT A</span>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white mb-2">Sibyl-Proxy</h3>
-                    <p class="text-sm text-gray-500 mb-6">Home Server / Edge</p>
-                    <ul class="space-y-3 text-sm text-gray-400">
-                        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▹</span> Golang reverse proxy via <code class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded">net/http/httputil</code></li>
-                        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▹</span> Intercepts private routes from Nginx/Cloudflare</li>
-                        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▹</span> In-memory caching via <code class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded">sync.Map</code> (300s TTL)</li>
-                        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▹</span> Strict <code class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded">context.WithTimeout</code> (1500ms)</li>
-                        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▹</span> 2MB payload limit via <code class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded">io.LimitReader</code></li>
-                    </ul>
-                </div>
-                <!-- Brain -->
-                <div class="glass rounded-2xl p-8 gradient-border">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
-                        <span class="font-mono text-sm text-emerald-400 tracking-wider">COMPONENT B</span>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white mb-2">Sibyl-Brain</h3>
-                    <p class="text-sm text-gray-500 mb-6">Google Cloud Run</p>
-                    <ul class="space-y-3 text-sm text-gray-400">
-                        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▹</span> Cognitive reasoning engine (API Gateway)</li>
-                        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▹</span> Gemini API integration for intent analysis</li>
-                        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▹</span> Deterministic JSON response schema</li>
-                        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▹</span> Crime Coefficient scoring (0-100)</li>
-                        <li class="flex items-start gap-2"><span class="text-emerald-400 mt-0.5">▹</span> Static dashboard via <code class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded">//go:embed</code></li>
-                    </ul>
-                </div>
+            <!-- Brain -->
+            <div class="glass rounded-2xl p-8 gradient-border">
+              <div class="flex items-center gap-3 mb-6">
+                <div
+                  class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"
+                ></div>
+                <span class="font-mono text-sm text-emerald-400 tracking-wider"
+                  >COMPONENT B</span
+                >
+              </div>
+              <h3 class="text-2xl font-bold text-white mb-2">Sibyl-Brain</h3>
+              <p class="text-sm text-gray-500 mb-6">Google Cloud Run</p>
+              <ul class="space-y-3 text-sm text-gray-400">
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 mt-0.5">▹</span> Cognitive
+                  reasoning engine (API Gateway)
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 mt-0.5">▹</span> Gemini API
+                  integration for intent analysis
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 mt-0.5">▹</span> Deterministic
+                  JSON response schema
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 mt-0.5">▹</span> Crime
+                  Coefficient scoring (0-100)
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-400 mt-0.5">▹</span> Static
+                  dashboard via
+                  <code
+                    class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                    >//go:embed</code
+                  >
+                </li>
+              </ul>
             </div>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- How It Works -->
-    <section id="how-it-works" class="py-32 relative" x-data="{ shown: false }" x-intersect.once="shown = true">
-        <div class="max-w-4xl mx-auto px-6" x-show="shown" x-transition:enter="transition ease-out duration-1000" x-transition:enter-start="opacity-0 translate-y-12" x-transition:enter-end="opacity-100 translate-y-0">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Execution <span class="text-emerald-400">Pipeline</span></h2>
-            </div>
-            <div class="space-y-6" x-data="{ active: null }">
-                <!-- Steps -->
-                <template x-for="(step, i) in [
+      <!-- How It Works -->
+      <section
+        id="how-it-works"
+        class="py-32 relative"
+        x-data="{ shown: false }"
+        x-intersect.once="shown = true"
+      >
+        <div
+          class="max-w-4xl mx-auto px-6"
+          x-show="shown"
+          x-transition:enter="transition ease-out duration-1000"
+          x-transition:enter-start="opacity-0 translate-y-12"
+          x-transition:enter-end="opacity-100 translate-y-0"
+        >
+          <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+              Execution <span class="text-emerald-400">Pipeline</span>
+            </h2>
+          </div>
+          <div class="space-y-6" x-data="{ active: null }">
+            <!-- Steps -->
+            <template
+              x-for="(step, i) in [
                     { phase: '01', title: 'Interception', desc: 'Nginx/Cloudflare forwards private routes to Sibyl-Proxy on your home server. Full HTTP request captured — headers, method, body.', color: 'cyan' },
                     { phase: '02', title: 'Extraction & Delegation', desc: 'Proxy extracts request parameters and POSTs the payload to Sibyl-Brain on Google Cloud Run, secured via internal API Key.', color: 'cyan' },
                     { phase: '03', title: 'Cognitive Evaluation', desc: 'Gemini API analyzes the payload with a deterministic system prompt. SQL Injection, XSS, Path Traversal, RCE — all evaluated semantically.', color: 'emerald' },
                     { phase: '04', title: 'Verdict & Response', desc: 'Cloud Run returns a structured JSON with Crime Coefficient score (0-100), threat status, and reasoning.', color: 'emerald' },
                     { phase: '05', title: 'Enforce or Pass', desc: 'Score ≥ 75? Connection terminated (HTTP 403). Score < 75? Traffic forwarded to your application. The client never knows.', color: 'red' }
-                ]" :key="i">
-                    <div class="glass rounded-xl p-6 cursor-pointer gradient-border hover:bg-white/[0.02] focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-colors" role="button" tabindex="0" :aria-expanded="active === i" @click="active = active === i ? null : i" @keydown.enter.prevent="active = active === i ? null : i" @keydown.space.prevent="active = active === i ? null : i">
-                        <div class="flex items-center gap-4">
-                            <span class="font-mono text-2xl font-black" :class="step.color === 'cyan' ? 'text-cyan-400' : step.color === 'emerald' ? 'text-emerald-400' : 'text-red-400'" x-text="step.phase"></span>
-                            <h3 class="text-lg font-semibold text-white" x-text="step.title"></h3>
-                            <svg class="w-4 h-4 text-gray-500 ml-auto transition-transform" :class="active === i && 'rotate-180'" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
-                        </div>
-                        <div x-show="active === i" x-collapse>
-                            <p class="text-gray-400 text-sm mt-4 leading-relaxed" x-text="step.desc"></p>
-                        </div>
-                    </div>
-                </template>
-            </div>
+                ]"
+              :key="i"
+            >
+              <div
+                class="glass rounded-xl p-6 cursor-pointer gradient-border hover:bg-white/[0.02] focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-colors"
+                role="button"
+                tabindex="0"
+                :aria-expanded="active === i"
+                @click="active = active === i ? null : i"
+                @keydown.enter.prevent="active = active === i ? null : i"
+                @keydown.space.prevent="active = active === i ? null : i"
+              >
+                <div class="flex items-center gap-4">
+                  <span
+                    class="font-mono text-2xl font-black"
+                    :class="step.color === 'cyan' ? 'text-cyan-400' : step.color === 'emerald' ? 'text-emerald-400' : 'text-red-400'"
+                    x-text="step.phase"
+                  ></span>
+                  <h3
+                    class="text-lg font-semibold text-white"
+                    x-text="step.title"
+                  ></h3>
+                  <svg
+                    class="w-4 h-4 text-gray-500 ml-auto transition-transform"
+                    :class="active === i && 'rotate-180'"
+                    aria-hidden="true"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                    />
+                  </svg>
+                </div>
+                <div x-show="active === i" x-collapse>
+                  <p
+                    class="text-gray-400 text-sm mt-4 leading-relaxed"
+                    x-text="step.desc"
+                  ></p>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
-    </section>
+      </section>
 
-    <!-- CTA -->
-    <section class="py-32 relative" x-data="{ shown: false }" x-intersect.once="shown = true">
-        <div class="max-w-3xl mx-auto px-6 text-center" x-show="shown" x-transition:enter="transition ease-out duration-1000" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
-            <div class="glass rounded-3xl p-12 gradient-border glow-green">
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Ready to Secure Your Server?</h2>
-                <p class="text-gray-400 mb-8 max-w-lg mx-auto">Deploy Sibyl-WAF and let AI guard your infrastructure. Every request evaluated. Every threat neutralized.</p>
-                <a href="/dashboard" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-bold rounded-xl hover:from-emerald-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 text-lg">
-                    Launch Dashboard
-                    <svg class="w-5 h-5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-                </a>
-            </div>
+      <!-- CTA -->
+      <section
+        class="py-32 relative"
+        x-data="{ shown: false }"
+        x-intersect.once="shown = true"
+      >
+        <div
+          class="max-w-3xl mx-auto px-6 text-center"
+          x-show="shown"
+          x-transition:enter="transition ease-out duration-1000"
+          x-transition:enter-start="opacity-0 scale-95"
+          x-transition:enter-end="opacity-100 scale-100"
+        >
+          <div class="glass rounded-3xl p-12 gradient-border glow-green">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+              Ready to Secure Your Server?
+            </h2>
+            <p class="text-gray-400 mb-8 max-w-lg mx-auto">
+              Deploy Sibyl-WAF and let AI guard your infrastructure. Every
+              request evaluated. Every threat neutralized.
+            </p>
+            <a
+              href="/dashboard"
+              class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-bold rounded-xl hover:from-emerald-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 text-lg"
+            >
+              Launch Dashboard
+              <svg
+                class="w-5 h-5"
+                aria-hidden="true"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+                />
+              </svg>
+            </a>
+          </div>
         </div>
-    </section>
+      </section>
+    </main>
 
     <!-- Footer -->
     <footer class="border-t border-white/5 py-8">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p class="text-xs text-gray-600 font-mono">© 2026 Sibyl-WAF • Cognitive Web Application Firewall</p>
-            <p class="text-xs text-gray-600 font-mono">#JuaraVibeCoding • Powered by Gemini API & Google Cloud Run</p>
-        </div>
+      <div
+        class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4"
+      >
+        <p class="text-xs text-gray-600 font-mono">
+          © 2026 Sibyl-WAF • Cognitive Web Application Firewall
+        </p>
+        <p class="text-xs text-gray-600 font-mono">
+          #JuaraVibeCoding • Powered by Gemini API & Google Cloud Run
+        </p>
+      </div>
     </footer>
-
-</body>
+  </body>
 </html>
