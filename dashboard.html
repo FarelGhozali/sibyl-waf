@@ -163,11 +163,18 @@
               ></span>
             </div>
           </div>
-          <div class="flex items-center gap-4">
-            <span
-              class="text-xs text-gray-600 font-mono"
-              x-text="currentTime"
-            ></span>
+          <div class="flex items-center gap-3 sm:gap-4">
+            <button @click="isPaused = !isPaused" class="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-1.5 rounded transition-colors" :class="isPaused?'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30':'bg-white/5 text-gray-400 hover:text-white border border-transparent'">
+              <span x-show="!isPaused" class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> <span class="hidden sm:inline">Pause Feed</span></span>
+              <span x-show="isPaused" class="flex items-center gap-1" x-cloak><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> <span class="hidden sm:inline">Resume</span></span>
+            </button>
+            <button @click="exportData()" class="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-1.5 rounded transition-colors bg-white/5 border border-transparent" :class="exportStatus==='done'?'text-emerald-400 bg-emerald-500/10':'text-gray-400 hover:text-white'">
+              <span x-show="exportStatus==='idle'" class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg> <span class="hidden sm:inline">Export</span></span>
+              <span x-show="exportStatus==='exporting'" class="flex items-center gap-1" x-cloak><svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg> <span class="hidden sm:inline">Exporting</span></span>
+              <span x-show="exportStatus==='done'" class="flex items-center gap-1" x-cloak><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> <span class="hidden sm:inline">Saved</span></span>
+            </button>
+            <div class="h-4 w-px bg-white/10 hidden sm:block"></div>
+            <span class="text-xs text-gray-600 font-mono hidden sm:block" x-text="currentTime"></span>
             <div
               class="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white"
             >
@@ -185,72 +192,66 @@
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <template x-for="s in stats" :key="s.label">
               <div class="glass rounded-xl p-4">
-                <p
-                  class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-2"
-                  x-text="s.label"
-                ></p>
-                <p
-                  class="text-2xl font-bold"
-                  :class="s.color"
-                  x-text="s.value"
-                ></p>
-                <p
-                  class="text-[10px] mt-1"
-                  :class="s.trend>0?'text-emerald-400':'text-red-400'"
-                >
-                  <span x-text="s.trend>0?'↑':'↓'"></span>
-                  <span x-text="Math.abs(s.trend)+'%'"></span>
-                  <span class="text-gray-600">vs last hour</span>
-                </p>
+                <!-- Skeleton Loader -->
+                <div x-show="isLoading" class="animate-pulse flex flex-col gap-3">
+                  <div class="h-3 w-20 bg-white/10 rounded"></div>
+                  <div class="h-8 w-24 bg-white/10 rounded"></div>
+                  <div class="h-2 w-16 bg-white/10 rounded"></div>
+                </div>
+                <!-- Actual Data -->
+                <div x-show="!isLoading" x-cloak>
+                  <p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-2" x-text="s.label"></p>
+                  <p class="text-2xl font-bold" :class="s.color" x-text="s.value"></p>
+                  <p class="text-[10px] mt-1" :class="s.trend>0?'text-emerald-400':'text-red-400'">
+                    <span x-text="s.trend>0?'↑':'↓'"></span>
+                    <span x-text="Math.abs(s.trend)+'%'"></span>
+                    <span class="text-gray-600">vs last hour</span>
+                  </p>
+                </div>
               </div>
             </template>
           </div>
 
           <!-- Charts Row -->
           <div class="grid lg:grid-cols-3 gap-4">
-            <div class="lg:col-span-2 glass rounded-xl p-4">
+            <div class="lg:col-span-2 glass rounded-xl p-4 relative">
               <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-semibold text-white">
-                  Traffic Analysis
-                </h2>
+                <h2 class="text-sm font-semibold text-white">Traffic Analysis</h2>
                 <div class="flex gap-2">
                   <template x-for="p in ['1H','6H','24H']" :key="p">
-                    <button
-                      @click="chartPeriod=p"
-                      class="px-2 py-0.5 rounded text-[10px] font-mono transition-colors"
-                      :class="chartPeriod===p?'bg-emerald-500/20 text-emerald-400':'text-gray-600 hover:text-gray-400'"
-                      x-text="p"
-                    ></button>
+                    <button @click="chartPeriod=p" class="px-2 py-0.5 rounded text-[10px] font-mono transition-colors" :class="chartPeriod===p?'bg-emerald-500/20 text-emerald-400':'text-gray-600 hover:text-gray-400'" x-text="p"></button>
                   </template>
                 </div>
               </div>
-              <div style="position: relative; height: 220px">
+              <div x-show="isLoading" class="absolute inset-0 top-12 p-4 flex items-end gap-2 animate-pulse">
+                <div class="w-1/6 h-1/3 bg-white/5 rounded-t"></div>
+                <div class="w-1/6 h-2/3 bg-white/5 rounded-t"></div>
+                <div class="w-1/6 h-full bg-white/5 rounded-t"></div>
+                <div class="w-1/6 h-4/5 bg-white/5 rounded-t"></div>
+                <div class="w-1/6 h-1/2 bg-white/5 rounded-t"></div>
+                <div class="w-1/6 h-1/4 bg-white/5 rounded-t"></div>
+              </div>
+              <div style="position: relative; height: 220px" :class="isLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'">
                 <canvas id="trafficChart"></canvas>
               </div>
             </div>
-            <div class="glass rounded-xl p-4">
-              <h2 class="text-sm font-semibold text-white mb-4">
-                Threat Distribution
-              </h2>
-              <div style="position: relative; height: 200px">
-                <canvas id="threatChart"></canvas>
+            <div class="glass rounded-xl p-4 relative">
+              <h2 class="text-sm font-semibold text-white mb-4">Threat Distribution</h2>
+              <div x-show="isLoading" class="flex items-center justify-center h-[200px] animate-pulse">
+                <div class="w-32 h-32 rounded-full border-8 border-white/5"></div>
               </div>
-              <div class="mt-4 space-y-2">
-                <template x-for="t in threatTypes" :key="t.name">
-                  <div class="flex items-center justify-between text-xs">
-                    <div class="flex items-center gap-2">
-                      <span
-                        class="w-2 h-2 rounded-full"
-                        :style="'background:'+t.color"
-                      ></span>
-                      <span class="text-gray-400" x-text="t.name"></span>
+              <div x-show="!isLoading" x-cloak>
+                <div style="position: relative; height: 200px">
+                  <canvas id="threatChart"></canvas>
+                </div>
+                <div class="mt-4 space-y-2">
+                  <template x-for="t in threatTypes" :key="t.name">
+                    <div class="flex items-center justify-between text-xs">
+                      <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" :style="'background:'+t.color"></span><span class="text-gray-400" x-text="t.name"></span></div>
+                      <span class="font-mono text-gray-500" x-text="t.count"></span>
                     </div>
-                    <span
-                      class="font-mono text-gray-500"
-                      x-text="t.count"
-                    ></span>
-                  </div>
-                </template>
+                  </template>
+                </div>
               </div>
             </div>
           </div>
@@ -292,6 +293,30 @@
                   </tr>
                 </thead>
                 <tbody>
+                  <!-- Skeleton Loaders -->
+                  <template x-if="isLoading">
+                    <template x-for="i in 5">
+                      <tr class="border-t border-white/[.03] animate-pulse">
+                        <td class="px-4 py-3"><div class="h-3 w-16 bg-white/5 rounded"></div></td>
+                        <td class="px-4 py-3"><div class="h-3 w-24 bg-white/5 rounded"></div></td>
+                        <td class="px-4 py-3"><div class="h-3 w-12 bg-white/5 rounded"></div></td>
+                        <td class="px-4 py-3"><div class="h-3 w-20 bg-white/5 rounded"></div></td>
+                        <td class="px-4 py-3"><div class="h-3 w-8 bg-white/5 rounded"></div></td>
+                        <td class="px-4 py-3"><div class="h-3 w-16 bg-white/5 rounded"></div></td>
+                        <td class="px-4 py-3"><div class="h-3 w-32 bg-white/5 rounded"></div></td>
+                      </tr>
+                    </template>
+                  </template>
+                  <!-- Empty State -->
+                  <tr x-show="!isLoading && filteredLogs.length === 0" x-cloak>
+                    <td colspan="7" class="px-4 py-16 text-center">
+                      <div class="flex flex-col items-center justify-center text-gray-500">
+                        <svg class="w-12 h-12 mb-3 text-emerald-500/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        <p class="text-sm font-semibold text-white">System Secure</p>
+                        <p class="text-xs mt-1">No threats detected matching criteria.</p>
+                      </div>
+                    </td>
+                  </tr>
                   <template x-for="(log,i) in filteredLogs" :key="i">
                     <tr
                       class="border-t border-white/[.03] hover:bg-white/[.02] transition-colors"
@@ -583,6 +608,9 @@
       function dashboardApp() {
         return {
           mobileMenuOpen: false,
+          isLoading: true,
+          isPaused: false,
+          exportStatus: 'idle',
           searchQuery: '',
           statusFilter: 'ALL',
           threatSearchQuery: '',
@@ -671,15 +699,28 @@
               return b.ip.includes(this.threatSearchQuery) || b.vector.toLowerCase().includes(this.threatSearchQuery.toLowerCase()) || b.payload.toLowerCase().includes(this.threatSearchQuery.toLowerCase());
             });
           },
+          exportData() {
+            if (this.exportStatus !== 'idle') return;
+            this.exportStatus = 'exporting';
+            setTimeout(() => {
+              this.exportStatus = 'done';
+              setTimeout(() => this.exportStatus = 'idle', 2000);
+            }, 1000);
+          },
           init() {
             this.updateTime();
             setInterval(() => this.updateTime(), 1000);
-            this.generateLogs();
-            setInterval(() => this.addLog(), 4000);
+            
             setTimeout(() => {
+              this.isLoading = false;
+              this.generateLogs();
               this.initTrafficChart();
               this.initThreatChart();
-            }, 500);
+            }, 1500);
+
+            setInterval(() => {
+              if (!this.isPaused && !this.isLoading) this.addLog();
+            }, 4000);
             this.$watch('currentTab', (val) => {
               if (val === 'analytics' && !this.analyticsChartsInit) {
                 this.analyticsChartsInit = true;
