@@ -79,6 +79,77 @@
     x-init="init()"
   >
 
+    <!-- Detail Modal -->
+    <div x-show="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" x-cloak>
+      <div x-show="modalOpen" @click="closeModal()" x-transition.opacity class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+      <div 
+        x-show="modalOpen" 
+        x-transition:enter="transition ease-out duration-300" 
+        x-transition:enter-start="opacity-0 scale-95 translate-y-4" 
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0" 
+        x-transition:leave="transition ease-in duration-200" 
+        x-transition:leave-start="opacity-100 scale-100 translate-y-0" 
+        x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+        class="relative w-full max-w-4xl glass rounded-xl border border-white/10 shadow-2xl flex flex-col max-h-[90vh]"
+      >
+        <template x-if="selectedLog">
+          <div class="flex flex-col h-full">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-shrink-0" :class="selectedLog.status==='BLOCKED'?'bg-red-500/5':'bg-emerald-500/5'">
+              <div class="flex items-center gap-3">
+                <div class="w-3 h-3 rounded-full animate-pulse" :class="selectedLog.status==='BLOCKED'?'bg-red-500':'bg-emerald-500'"></div>
+                <h3 class="text-lg font-bold text-white">Request Details <span class="text-xs font-mono text-gray-500 ml-2" x-text="selectedLog.time"></span></h3>
+              </div>
+              <button @click="closeModal()" class="text-gray-400 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto space-y-6">
+              <!-- Grid -->
+              <div class="grid lg:grid-cols-2 gap-6">
+                <!-- Info -->
+                <div class="space-y-4">
+                  <div class="glass p-4 rounded-lg border border-white/5 space-y-3">
+                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Source IP</span><span class="text-sm font-mono text-cyan-400" x-text="selectedLog.ip"></span></div>
+                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Target Path</span><span class="text-sm font-mono text-white" x-text="selectedLog.target"></span></div>
+                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Method</span><span class="text-sm font-mono" :class="selectedLog.method==='POST'?'text-yellow-400':'text-gray-300'" x-text="selectedLog.method"></span></div>
+                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Status</span><span class="text-sm font-bold" :class="selectedLog.status==='BLOCKED'?'text-red-400':'text-emerald-400'" x-text="selectedLog.status"></span></div>
+                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Vector</span><span class="text-sm font-mono text-gray-300" x-text="selectedLog.vector"></span></div>
+                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Crime Score</span><span class="text-sm font-bold font-mono" :class="selectedLog.score>=75?'text-red-400':'text-emerald-400'" x-text="selectedLog.score"></span></div>
+                  </div>
+                </div>
+                
+                <!-- Request Preview -->
+                <div class="space-y-2">
+                  <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg> Raw HTTP Headers</h4>
+                  <div class="bg-[#050a14] p-4 rounded-lg border border-white/10 font-mono text-xs text-gray-400 whitespace-pre-wrap overflow-x-auto" x-text="selectedLog.headers"></div>
+                </div>
+              </div>
+              
+              <!-- Payload -->
+              <div class="space-y-2">
+                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Detected Payload Snippet</h4>
+                <div class="bg-[#050a14] p-3 rounded-lg border border-red-500/20 font-mono text-xs text-red-400 break-all" x-text="selectedLog.payload"></div>
+              </div>
+
+              <!-- AI Analysis -->
+              <div class="glass p-5 rounded-lg border border-emerald-500/20 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
+                <h4 class="text-sm font-bold text-white flex items-center gap-2 mb-3">
+                  <div class="w-5 h-5 rounded bg-emerald-500/20 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                  </div>
+                  Sibyl Brain Analysis
+                </h4>
+                <p class="text-sm text-gray-300 leading-relaxed" x-text="selectedLog.aiAnalysis"></p>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
 
     <div class="flex h-screen overflow-hidden relative">
       <!-- Mobile Overlay -->
@@ -319,7 +390,8 @@
                   </tr>
                   <template x-for="(log,i) in filteredLogs" :key="i">
                     <tr
-                      class="border-t border-white/[.03] hover:bg-white/[.02] transition-colors"
+                      class="border-t border-white/[.03] hover:bg-white/[.05] transition-colors cursor-pointer"
+                      @click="openModal(log, 'live')"
                       x-show="log.visible"
                       x-transition:enter="transition ease-out duration-300"
                       x-transition:enter-start="opacity-0 -translate-y-2"
@@ -432,7 +504,7 @@
                   </thead>
                   <tbody>
                     <template x-for="(b,i) in filteredThreats" :key="i">
-                      <tr class="border-t border-white/[.03] hover:bg-white/[.02] transition-colors">
+                      <tr class="border-t border-white/[.03] hover:bg-white/[.05] transition-colors cursor-pointer" @click="openModal(b, 'blocked')">
                         <td class="px-4 py-2 text-gray-500" x-text="b.time"></td>
                         <td class="px-4 py-2 text-cyan-400" x-text="b.ip"></td>
                         <td class="px-4 py-2"><span class="px-1.5 py-0.5 rounded text-[10px] bg-red-500/10 text-red-400" x-text="b.vector"></span></td>
@@ -618,7 +690,8 @@
           chartPeriod: "6H",
           crimeCoefficient: 42,
           currentTime: "",
-          currentTime: "",
+          modalOpen: false,
+          selectedLog: null,
           nav: [
             {
               id: "overview",
@@ -698,6 +771,36 @@
             return this.blockedRequests.filter(b => {
               return b.ip.includes(this.threatSearchQuery) || b.vector.toLowerCase().includes(this.threatSearchQuery.toLowerCase()) || b.payload.toLowerCase().includes(this.threatSearchQuery.toLowerCase());
             });
+          },
+          openModal(logData, source) {
+            let log = { ...logData };
+            if (source === 'live') {
+              log.vector = log.reason.split(':')[0] || 'Unknown';
+              log.target = log.path;
+              log.payload = log.reason.includes('SQL') ? "' OR 1=1 --" : (log.reason.includes('XSS') ? "\\x3cscript\\x3ealert(1)\\x3c/script\\x3e" : "N/A");
+              if (log.status === 'PASSED') { log.vector = 'None'; log.payload = 'Safe Request'; }
+            } else {
+              log.method = 'POST';
+              log.status = 'BLOCKED';
+            }
+            log.headers = `Host: target-app.com\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\nAccept: */*\nConnection: keep-alive\nX-Forwarded-For: ${log.ip}`;
+            
+            if (log.status === 'PASSED') {
+              log.aiAnalysis = "Traffic appears normal. No malicious patterns detected. Request safely forwarded to upstream application.";
+            } else if (log.vector.includes('SQL')) {
+              log.aiAnalysis = "High probability of SQL Injection attempt detected. Payload attempts to bypass authentication or extract data. Recommendation: Ensure parameterized queries are used across the target endpoint. Sibyl-WAF has blocked the request.";
+            } else if (log.vector.includes('XSS')) {
+              log.aiAnalysis = "Cross-Site Scripting (XSS) payload detected in request. Attacker is attempting to inject executable scripts. Recommendation: Implement strict Content Security Policy (CSP) and ensure output encoding on the application side.";
+            } else {
+              log.aiAnalysis = "Malicious pattern matching known signature for " + log.vector + ". Recommendation: Review endpoint security and rate limit the attacking IP.";
+            }
+            
+            this.selectedLog = log;
+            this.modalOpen = true;
+          },
+          closeModal() {
+            this.modalOpen = false;
+            setTimeout(() => this.selectedLog = null, 300);
           },
           exportData() {
             if (this.exportStatus !== 'idle') return;
