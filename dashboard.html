@@ -686,7 +686,7 @@
           searchQuery: '',
           statusFilter: 'ALL',
           threatSearchQuery: '',
-          currentTab: "overview",
+          currentTab: localStorage.getItem('sibyl_tab') || "overview",
           chartPeriod: "6H",
           crimeCoefficient: 42,
           currentTime: "",
@@ -825,6 +825,7 @@
               if (!this.isPaused && !this.isLoading) this.addLog();
             }, 4000);
             this.$watch('currentTab', (val) => {
+              localStorage.setItem('sibyl_tab', val);
               if (val === 'analytics' && !this.analyticsChartsInit) {
                 this.analyticsChartsInit = true;
                 setTimeout(() => { this.initResponseChart(); this.initHourlyChart(); }, 300);
