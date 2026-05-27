@@ -15,7 +15,7 @@
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <script>
@@ -33,33 +33,33 @@
     <link rel="stylesheet" href="css/dashboard.css" />
   </head>
   <body
-    class="text-gray-300 antialiased"
+    class="text-zinc-100 bg-zinc-950 antialiased"
     x-data="dashboardApp()"
     x-init="init()"
   >
 
     <!-- Detail Modal -->
     <div x-show="modalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" x-cloak>
-      <div x-show="modalOpen" @click="closeModal()" x-transition.opacity class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+      <div x-show="modalOpen" @click="closeModal()" x-transition.opacity class="absolute inset-0 bg-black/80"></div>
       <div 
         x-show="modalOpen" 
-        x-transition:enter="transition ease-out duration-300" 
-        x-transition:enter-start="opacity-0 scale-95 translate-y-4" 
-        x-transition:enter-end="opacity-100 scale-100 translate-y-0" 
-        x-transition:leave="transition ease-in duration-200" 
-        x-transition:leave-start="opacity-100 scale-100 translate-y-0" 
-        x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-        class="relative w-full max-w-4xl glass rounded-xl border border-white/10 shadow-2xl flex flex-col max-h-[90vh]"
+        x-transition:enter="transition ease-out duration-200" 
+        x-transition:enter-start="opacity-0 scale-95" 
+        x-transition:enter-end="opacity-100 scale-100" 
+        x-transition:leave="transition ease-in duration-150" 
+        x-transition:leave-start="opacity-100 scale-100" 
+        x-transition:leave-end="opacity-0 scale-95"
+        class="relative w-full max-w-4xl bg-zinc-900 rounded-sm border border-zinc-800 flex flex-col max-h-[90vh]"
       >
         <template x-if="selectedLog">
           <div class="flex flex-col h-full">
             <!-- Modal Header -->
-            <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-shrink-0" :class="selectedLog.status==='BLOCKED'?'bg-red-500/5':'bg-emerald-500/5'">
+            <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between flex-shrink-0 bg-zinc-950">
               <div class="flex items-center gap-3">
-                <div class="w-3 h-3 rounded-full animate-pulse" :class="selectedLog.status==='BLOCKED'?'bg-red-500':'bg-emerald-500'"></div>
-                <h3 class="text-lg font-bold text-white">Request Details <span class="text-xs font-mono text-gray-500 ml-2" x-text="selectedLog.time"></span></h3>
+                <div class="w-2 h-2" :class="selectedLog.status==='BLOCKED'?'bg-rose-500':'bg-cyan-400'"></div>
+                <h3 class="text-lg font-mono font-bold text-zinc-100 uppercase tracking-wide">Request Details <span class="text-xs font-light text-zinc-500 ml-2" x-text="selectedLog.time"></span></h3>
               </div>
-              <button @click="closeModal()" class="text-gray-400 hover:text-white transition-colors">
+              <button @click="closeModal()" class="text-zinc-500 hover:text-zinc-100 transition-colors">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
@@ -70,39 +70,38 @@
               <div class="grid lg:grid-cols-2 gap-6">
                 <!-- Info -->
                 <div class="space-y-4">
-                  <div class="glass p-4 rounded-lg border border-white/5 space-y-3">
-                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Source IP</span><span class="text-sm font-mono text-cyan-400" x-text="selectedLog.ip"></span></div>
-                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Target Path</span><span class="text-sm font-mono text-white" x-text="selectedLog.target"></span></div>
-                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Method</span><span class="text-sm font-mono" :class="selectedLog.method==='POST'?'text-yellow-400':'text-gray-300'" x-text="selectedLog.method"></span></div>
-                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Status</span><span class="text-sm font-bold" :class="selectedLog.status==='BLOCKED'?'text-red-400':'text-emerald-400'" x-text="selectedLog.status"></span></div>
-                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Vector</span><span class="text-sm font-mono text-gray-300" x-text="selectedLog.vector"></span></div>
-                    <div class="flex justify-between"><span class="text-xs font-mono text-gray-500">Crime Score</span><span class="text-sm font-bold font-mono" :class="selectedLog.score>=75?'text-red-400':'text-emerald-400'" x-text="selectedLog.score"></span></div>
+                  <div class="bg-zinc-950 p-4 rounded-sm border border-zinc-800 space-y-3">
+                    <div class="flex justify-between"><span class="text-xs font-mono text-zinc-500">Source IP</span><span class="text-sm font-mono font-light text-cyan-400" x-text="selectedLog.ip"></span></div>
+                    <div class="flex justify-between"><span class="text-xs font-mono text-zinc-500">Target Path</span><span class="text-sm font-mono font-light text-zinc-300" x-text="selectedLog.target"></span></div>
+                    <div class="flex justify-between"><span class="text-xs font-mono text-zinc-500">Method</span><span class="text-sm font-mono font-light" :class="selectedLog.method==='POST'?'text-yellow-400':'text-zinc-300'" x-text="selectedLog.method"></span></div>
+                    <div class="flex justify-between"><span class="text-xs font-mono text-zinc-500">Status</span><span class="text-sm font-mono font-bold border px-1" :class="selectedLog.status==='BLOCKED'?'text-rose-500 border-rose-500':'text-cyan-400 border-cyan-400'" x-text="selectedLog.status"></span></div>
+                    <div class="flex justify-between"><span class="text-xs font-mono text-zinc-500">Vector</span><span class="text-sm font-mono font-light text-zinc-300" x-text="selectedLog.vector"></span></div>
+                    <div class="flex justify-between"><span class="text-xs font-mono text-zinc-500">Crime Score</span><span class="text-sm font-bold font-mono" :class="selectedLog.score>=75?'text-rose-500':'text-cyan-400'" x-text="selectedLog.score"></span></div>
                   </div>
                 </div>
                 
                 <!-- Request Preview -->
                 <div class="space-y-2">
-                  <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg> Raw HTTP Headers</h4>
-                  <div class="bg-[#050a14] p-4 rounded-lg border border-white/10 font-mono text-xs text-gray-400 whitespace-pre-wrap overflow-x-auto" x-text="selectedLog.headers"></div>
+                  <h4 class="text-xs font-mono font-bold text-zinc-100 uppercase tracking-wider flex items-center gap-2"><svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg> Raw HTTP Headers</h4>
+                  <div class="bg-zinc-950 p-4 rounded-sm border border-zinc-800 font-mono font-light text-xs text-zinc-400 whitespace-pre-wrap overflow-x-auto" x-text="selectedLog.headers"></div>
                 </div>
               </div>
               
               <!-- Payload -->
               <div class="space-y-2">
-                <h4 class="text-xs font-bold text-white uppercase tracking-wider">Detected Payload Snippet</h4>
-                <div class="bg-[#050a14] p-3 rounded-lg border border-red-500/20 font-mono text-xs text-red-400 break-all" x-text="selectedLog.payload"></div>
+                <h4 class="text-xs font-mono font-bold text-zinc-100 uppercase tracking-wider">Detected Payload Snippet</h4>
+                <div class="bg-zinc-950 p-3 rounded-sm border border-rose-500 font-mono font-light text-xs text-rose-500 break-all" x-text="selectedLog.payload"></div>
               </div>
 
               <!-- AI Analysis -->
-              <div class="glass p-5 rounded-lg border border-emerald-500/20 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
-                <h4 class="text-sm font-bold text-white flex items-center gap-2 mb-3">
-                  <div class="w-5 h-5 rounded bg-emerald-500/20 flex items-center justify-center">
-                    <svg class="w-3 h-3 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              <div class="bg-zinc-950 p-5 rounded-sm border border-cyan-400 relative overflow-hidden">
+                <h4 class="text-sm font-mono font-bold text-zinc-100 flex items-center gap-2 mb-3 uppercase tracking-wide">
+                  <div class="w-5 h-5 border border-cyan-400 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-cyan-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                   </div>
                   Sibyl Brain Analysis
                 </h4>
-                <p class="text-sm text-gray-300 leading-relaxed" x-text="selectedLog.aiAnalysis"></p>
+                <p class="text-sm text-zinc-300 leading-relaxed font-mono font-light" x-text="selectedLog.aiAnalysis"></p>
               </div>
             </div>
           </div>
@@ -116,16 +115,16 @@
 
       <!-- Sidebar -->
       <aside
-        class="w-56 flex-shrink-0 glass border-r border-white/5 flex flex-col absolute md:relative z-40 h-full transition-transform duration-300"
+        class="w-56 flex-shrink-0 bg-zinc-950 border-r border-zinc-800 flex flex-col absolute md:relative z-40 h-full transition-transform duration-300"
         :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
       >
-        <div class="p-4 border-b border-white/5">
-          <a href="/" class="flex items-center gap-2">
+        <div class="p-4 border-b border-zinc-800">
+          <a href="/" class="flex items-center gap-3">
             <div
-              class="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center"
+              class="w-7 h-7 border border-cyan-400 rounded-sm flex items-center justify-center"
             >
               <svg
-                class="w-4 h-4 text-white"
+                class="w-4 h-4 text-cyan-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -138,8 +137,8 @@
                 />
               </svg>
             </div>
-            <span class="text-white font-bold text-sm"
-              >Sibyl<span class="text-emerald-400">-WAF</span></span
+            <span class="text-zinc-100 font-mono font-bold tracking-tight text-sm uppercase"
+              >Sibyl<span class="text-cyan-400">-WAF</span></span
             >
           </a>
         </div>
@@ -148,20 +147,20 @@
             <a
               href="#"
               @click.prevent="currentTab=item.id; mobileMenuOpen=false"
-              class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
-              :class="currentTab===item.id?'bg-emerald-500/10 text-emerald-400':'text-gray-500 hover:text-gray-300 hover:bg-white/5'"
+              class="flex items-center gap-3 px-3 py-2 rounded-sm text-sm font-mono uppercase tracking-wide transition-colors"
+              :class="currentTab===item.id?'bg-zinc-800 text-cyan-400 font-bold border-l-2 border-cyan-400':'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 border-l-2 border-transparent'"
             >
               <span x-html="item.icon"></span>
               <span x-text="item.label"></span>
             </a>
           </template>
         </nav>
-        <div class="p-4 border-t border-white/5">
+        <div class="p-4 border-t border-zinc-800">
           <div class="flex items-center gap-2">
             <div
-              class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+              class="w-2 h-2 bg-cyan-400"
             ></div>
-            <span class="text-xs text-gray-600 font-mono">System Online</span>
+            <span class="text-xs text-zinc-500 font-mono uppercase tracking-widest">System Online</span>
           </div>
         </div>
       </aside>
@@ -170,43 +169,43 @@
       <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Header -->
         <header
-          class="h-14 flex-shrink-0 glass border-b border-white/5 flex items-center justify-between px-6"
+          class="h-14 flex-shrink-0 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-6"
         >
           <div class="flex items-center gap-4">
-            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-gray-400 hover:text-white transition-colors">
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-zinc-500 hover:text-zinc-100 transition-colors">
               <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
-            <h1 class="text-sm font-semibold text-white hidden sm:block">Dashboard</h1>
+            <h1 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 hidden sm:block">Dashboard</h1>
             <div
-              class="flex items-center gap-2 px-3 py-1 rounded-full"
-              :class="crimeCoefficient>=75?'bg-red-500/10 border border-red-500/20':'bg-emerald-500/10 border border-emerald-500/20'"
+              class="flex items-center gap-2 px-3 py-1 border rounded-sm"
+              :class="crimeCoefficient>=75?'border-rose-500 bg-zinc-900':'border-zinc-800 bg-zinc-900'"
             >
               <span
                 class="text-[10px] font-mono uppercase tracking-wider"
-                :class="crimeCoefficient>=75?'text-red-400':'text-emerald-400'"
+                :class="crimeCoefficient>=75?'text-rose-500':'text-zinc-500'"
                 >Crime Coefficient</span
               >
               <span
-                class="text-sm font-black font-mono"
-                :class="crimeCoefficient>=75?'text-red-400 tglow-r':'text-emerald-400 tglow-g'"
+                class="text-sm font-bold font-mono"
+                :class="crimeCoefficient>=75?'text-rose-500':'text-cyan-400'"
                 x-text="crimeCoefficient"
               ></span>
             </div>
           </div>
           <div class="flex items-center gap-3 sm:gap-4">
-            <button @click="isPaused = !isPaused" class="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-1.5 rounded transition-colors" :class="isPaused?'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30':'bg-white/5 text-gray-400 hover:text-white border border-transparent'">
+            <button @click="isPaused = !isPaused" class="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-1.5 rounded-sm transition-colors border" :class="isPaused?'bg-zinc-800 text-yellow-400 border-yellow-500':'bg-transparent text-zinc-500 hover:text-zinc-100 border-zinc-800 hover:border-zinc-600'">
               <span x-show="!isPaused" class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> <span class="hidden sm:inline">Pause Feed</span></span>
               <span x-show="isPaused" class="flex items-center gap-1" x-cloak><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> <span class="hidden sm:inline">Resume</span></span>
             </button>
-            <button @click="exportData()" class="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-1.5 rounded transition-colors bg-white/5 border border-transparent" :class="exportStatus==='done'?'text-emerald-400 bg-emerald-500/10':'text-gray-400 hover:text-white'">
+            <button @click="exportData()" class="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-1.5 rounded-sm transition-colors border" :class="exportStatus==='done'?'text-cyan-400 border-cyan-400 bg-zinc-900':'bg-transparent border-zinc-800 text-zinc-500 hover:text-zinc-100 hover:border-zinc-600'">
               <span x-show="exportStatus==='idle'" class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg> <span class="hidden sm:inline">Export</span></span>
               <span x-show="exportStatus==='exporting'" class="flex items-center gap-1" x-cloak><svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg> <span class="hidden sm:inline">Exporting</span></span>
               <span x-show="exportStatus==='done'" class="flex items-center gap-1" x-cloak><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> <span class="hidden sm:inline">Saved</span></span>
             </button>
-            <div class="h-4 w-px bg-white/10 hidden sm:block"></div>
-            <span class="text-xs text-gray-600 font-mono hidden sm:block" x-text="currentTime"></span>
+            <div class="h-4 w-px bg-zinc-800 hidden sm:block"></div>
+            <span class="text-xs text-zinc-400 font-mono hidden sm:block" x-text="currentTime"></span>
             <div
-              class="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white"
+              class="w-7 h-7 rounded-sm bg-zinc-900 border border-zinc-800 flex items-center justify-center text-[10px] font-mono font-bold text-cyan-400 uppercase"
             >
               A
             </div>
@@ -221,21 +220,21 @@
           <!-- Stats Row -->
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <template x-for="s in stats" :key="s.label">
-              <div class="glass rounded-xl p-4">
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-4">
                 <!-- Skeleton Loader -->
                 <div x-show="isLoading" class="animate-pulse flex flex-col gap-3">
-                  <div class="h-3 w-20 bg-white/10 rounded"></div>
-                  <div class="h-8 w-24 bg-white/10 rounded"></div>
-                  <div class="h-2 w-16 bg-white/10 rounded"></div>
+                  <div class="h-3 w-20 bg-zinc-800 rounded-sm"></div>
+                  <div class="h-8 w-24 bg-zinc-800 rounded-sm"></div>
+                  <div class="h-2 w-16 bg-zinc-800 rounded-sm"></div>
                 </div>
                 <!-- Actual Data -->
                 <div x-show="!isLoading" x-cloak>
-                  <p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-2" x-text="s.label"></p>
-                  <p class="text-2xl font-bold" :class="s.color" x-text="s.value"></p>
-                  <p class="text-[10px] mt-1" :class="s.trend>0?'text-emerald-400':'text-red-400'">
-                    <span x-text="s.trend>0?'↑':'↓'"></span>
+                  <p class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2" x-text="s.label"></p>
+                  <p class="text-2xl font-mono font-black" :class="s.color === 'text-red-400' ? 'text-rose-500' : 'text-cyan-400'" x-text="s.value"></p>
+                  <p class="text-[10px] mt-1 font-mono font-light" :class="s.trend>0?'text-cyan-400':'text-rose-500'">
+                    <span x-text="s.trend>0?'+':'-'"></span>
                     <span x-text="Math.abs(s.trend)+'%'"></span>
-                    <span class="text-gray-600">vs last hour</span>
+                    <span class="text-zinc-600 ml-1">vs last hr</span>
                   </p>
                 </div>
               </div>
@@ -244,41 +243,78 @@
 
           <!-- Charts Row -->
           <div class="grid lg:grid-cols-3 gap-4">
-            <div class="lg:col-span-2 glass rounded-xl p-4 relative">
+            <div class="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-sm p-4 relative">
               <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-semibold text-white">Traffic Analysis</h2>
+                <h2 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100">Traffic Analysis</h2>
                 <div class="flex gap-2">
                   <template x-for="p in ['1H','6H','24H']" :key="p">
-                    <button @click="chartPeriod=p" class="px-2 py-0.5 rounded text-[10px] font-mono transition-colors" :class="chartPeriod===p?'bg-emerald-500/20 text-emerald-400':'text-gray-600 hover:text-gray-400'" x-text="p"></button>
+                    <button @click="chartPeriod=p" class="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold transition-colors border" :class="chartPeriod===p?'bg-zinc-800 text-cyan-400 border-cyan-400':'text-zinc-500 border-zinc-800 hover:text-zinc-300'" x-text="p"></button>
                   </template>
                 </div>
               </div>
               <div x-show="isLoading" class="absolute inset-0 top-12 p-4 flex items-end gap-2 animate-pulse">
-                <div class="w-1/6 h-1/3 bg-white/5 rounded-t"></div>
-                <div class="w-1/6 h-2/3 bg-white/5 rounded-t"></div>
-                <div class="w-1/6 h-full bg-white/5 rounded-t"></div>
-                <div class="w-1/6 h-4/5 bg-white/5 rounded-t"></div>
-                <div class="w-1/6 h-1/2 bg-white/5 rounded-t"></div>
-                <div class="w-1/6 h-1/4 bg-white/5 rounded-t"></div>
+                <div class="w-1/6 h-1/3 bg-zinc-800 rounded-t-sm"></div>
+                <div class="w-1/6 h-2/3 bg-zinc-800 rounded-t-sm"></div>
+                <div class="w-1/6 h-full bg-zinc-800 rounded-t-sm"></div>
+                <div class="w-1/6 h-4/5 bg-zinc-800 rounded-t-sm"></div>
+                <div class="w-1/6 h-1/2 bg-zinc-800 rounded-t-sm"></div>
+                <div class="w-1/6 h-1/4 bg-zinc-800 rounded-t-sm"></div>
               </div>
               <div style="position: relative; height: 220px" :class="isLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-500'">
                 <canvas id="trafficChart"></canvas>
               </div>
             </div>
-            <div class="glass rounded-xl p-4 relative">
-              <h2 class="text-sm font-semibold text-white mb-4">Threat Distribution</h2>
-              <div x-show="isLoading" class="flex items-center justify-center h-[200px] animate-pulse">
-                <div class="w-32 h-32 rounded-full border-8 border-white/5"></div>
+            
+            <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-4 relative flex flex-col">
+              <h2 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 mb-4">Attack Vector Network</h2>
+              <div x-show="isLoading" class="flex-1 flex items-center justify-center animate-pulse">
+                <div class="w-full h-full bg-zinc-800 border border-zinc-700 rounded-sm"></div>
               </div>
-              <div x-show="!isLoading" x-cloak>
-                <div style="position: relative; height: 200px">
-                  <canvas id="threatChart"></canvas>
+              <div x-show="!isLoading" class="flex-1 flex flex-col" x-cloak>
+                <div style="position: relative; height: 160px" class="w-full border border-zinc-800 bg-zinc-950 flex-shrink-0">
+                  <svg width="100%" height="100%" viewBox="0 0 300 160" class="absolute inset-0 w-full h-full" preserveAspectRatio="xMidYMid meet">
+                     <!-- Network Map -->
+                     <line x1="60" y1="30" x2="150" y2="80" stroke="#f43f5e" stroke-width="1" opacity="0.6"/>
+                     <line x1="60" y1="80" x2="150" y2="80" stroke="#f43f5e" stroke-width="1" opacity="0.6"/>
+                     <line x1="60" y1="130" x2="150" y2="80" stroke="#06b6d4" stroke-width="1" opacity="0.6"/>
+                     
+                     <line x1="240" y1="30" x2="150" y2="80" stroke="#06b6d4" stroke-width="1" opacity="0.6"/>
+                     <line x1="240" y1="80" x2="150" y2="80" stroke="#f43f5e" stroke-width="1" opacity="0.6"/>
+                     <line x1="240" y1="130" x2="150" y2="80" stroke="#06b6d4" stroke-width="1" opacity="0.6"/>
+
+                     <!-- Core -->
+                     <rect x="135" y="65" width="30" height="30" fill="#09090b" stroke="#06b6d4" stroke-width="1.5" />
+                     <text x="150" y="83" text-anchor="middle" font-family="monospace" font-size="9" fill="#06b6d4" font-weight="bold">CORE</text>
+
+                     <!-- Nodes Left -->
+                     <rect x="35" y="22" width="25" height="16" fill="#09090b" stroke="#f43f5e" stroke-width="1" />
+                     <text x="47.5" y="33" text-anchor="middle" font-family="monospace" font-size="8" fill="#f43f5e">SQLi</text>
+                     
+                     <rect x="35" y="72" width="25" height="16" fill="#09090b" stroke="#f43f5e" stroke-width="1" />
+                     <text x="47.5" y="83" text-anchor="middle" font-family="monospace" font-size="8" fill="#f43f5e">XSS</text>
+                     
+                     <rect x="35" y="122" width="25" height="16" fill="#09090b" stroke="#06b6d4" stroke-width="1" />
+                     <text x="47.5" y="133" text-anchor="middle" font-family="monospace" font-size="8" fill="#06b6d4">BOT</text>
+
+                     <!-- Nodes Right -->
+                     <rect x="240" y="22" width="25" height="16" fill="#09090b" stroke="#06b6d4" stroke-width="1" />
+                     <text x="252.5" y="33" text-anchor="middle" font-family="monospace" font-size="8" fill="#06b6d4">LFI</text>
+
+                     <rect x="240" y="72" width="25" height="16" fill="#09090b" stroke="#f43f5e" stroke-width="1" />
+                     <text x="252.5" y="83" text-anchor="middle" font-family="monospace" font-size="8" fill="#f43f5e">RCE</text>
+
+                     <rect x="240" y="122" width="25" height="16" fill="#09090b" stroke="#06b6d4" stroke-width="1" />
+                     <text x="252.5" y="133" text-anchor="middle" font-family="monospace" font-size="8" fill="#06b6d4">DDoS</text>
+                  </svg>
                 </div>
-                <div class="mt-4 space-y-2">
+                <div class="mt-4 space-y-2 flex-1">
                   <template x-for="t in threatTypes" :key="t.name">
-                    <div class="flex items-center justify-between text-xs">
-                      <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" :style="'background:'+t.color"></span><span class="text-gray-400" x-text="t.name"></span></div>
-                      <span class="font-mono text-gray-500" x-text="t.count"></span>
+                    <div class="flex items-center justify-between text-[10px] font-mono">
+                      <div class="flex items-center gap-2">
+                        <span class="w-1.5 h-3 bg-zinc-700"></span>
+                        <span class="text-zinc-400 uppercase tracking-wider" x-text="t.name"></span>
+                      </div>
+                      <span class="font-mono text-cyan-400" x-text="t.count"></span>
                     </div>
                   </template>
                 </div>
@@ -287,105 +323,88 @@
           </div>
 
           <!-- Threat Log -->
-          <div class="glass rounded-xl overflow-hidden">
+          <div class="bg-zinc-900 border border-zinc-800 rounded-sm overflow-hidden">
             <div
-              class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-b border-white/5 gap-3"
+              class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-b border-zinc-800 gap-3"
             >
               <div class="flex items-center justify-between w-full sm:w-auto">
-                <div class="flex items-center gap-2">
-                  <div class="w-2 h-2 rounded-full bg-red-400 animate-pulse"></div>
-                  <h2 class="text-sm font-semibold text-white">Live Threat Log</h2>
+                <div class="flex items-center gap-3">
+                  <div class="w-2 h-2 bg-rose-500"></div>
+                  <h2 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100">Live Threat Log</h2>
                 </div>
-                <span class="text-[10px] font-mono text-gray-600 sm:hidden" x-text="filteredLogs.length+' entries'"></span>
+                <span class="text-[10px] font-mono text-zinc-500 sm:hidden" x-text="filteredLogs.length+' entries'"></span>
               </div>
               
               <div class="flex-1 flex items-center justify-end gap-3 w-full sm:w-auto">
-                <input type="text" x-model="searchQuery" placeholder="Search IP, path, or reason..." class="w-full sm:max-w-[200px] px-3 py-1.5 rounded-lg bg-gray-900/80 border border-white/10 text-[10px] font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
-                <select x-model="statusFilter" class="px-2 py-1.5 rounded-lg bg-gray-900/80 border border-white/10 text-[10px] font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors appearance-none cursor-pointer">
+                <input type="text" x-model="searchQuery" placeholder="Search IP, path..." class="w-full sm:max-w-[200px] px-3 py-1 border border-zinc-800 bg-zinc-950 text-[10px] font-mono text-zinc-100 rounded-sm focus:border-cyan-400 focus:outline-none transition-colors">
+                <select x-model="statusFilter" class="px-2 py-1 border border-zinc-800 bg-zinc-950 text-[10px] font-mono text-zinc-100 rounded-sm focus:border-cyan-400 focus:outline-none transition-colors appearance-none cursor-pointer">
                   <option value="ALL">All Status</option>
                   <option value="BLOCKED">Blocked</option>
                   <option value="PASSED">Passed</option>
                 </select>
-                <span class="text-[10px] font-mono text-gray-600 hidden sm:block whitespace-nowrap" x-text="filteredLogs.length+' entries'"></span>
+                <span class="text-[10px] font-mono text-zinc-500 hidden sm:block whitespace-nowrap" x-text="filteredLogs.length+' entries'"></span>
               </div>
             </div>
             <div class="overflow-y-auto log-scroll" style="max-height: 320px">
-              <table class="w-full text-xs font-mono">
-                <thead class="sticky top-0" style="background: #0d1321">
-                  <tr class="text-gray-600 text-left">
-                    <th class="px-4 py-2 font-medium">TIME</th>
-                    <th class="px-4 py-2 font-medium">IP</th>
-                    <th class="px-4 py-2 font-medium">METHOD</th>
-                    <th class="px-4 py-2 font-medium">PATH</th>
-                    <th class="px-4 py-2 font-medium">SCORE</th>
-                    <th class="px-4 py-2 font-medium">STATUS</th>
-                    <th class="px-4 py-2 font-medium">REASON</th>
+              <table class="w-full text-[10px] sm:text-xs font-mono font-light">
+                <thead class="sticky top-0 bg-zinc-950 border-b border-zinc-800">
+                  <tr class="text-zinc-500 text-left">
+                    <th class="px-3 py-2 font-bold tracking-wider uppercase">Time</th>
+                    <th class="px-3 py-2 font-bold tracking-wider uppercase">IP</th>
+                    <th class="px-3 py-2 font-bold tracking-wider uppercase">Method</th>
+                    <th class="px-3 py-2 font-bold tracking-wider uppercase">Path</th>
+                    <th class="px-3 py-2 font-bold tracking-wider uppercase">Score</th>
+                    <th class="px-3 py-2 font-bold tracking-wider uppercase">Status</th>
+                    <th class="px-3 py-2 font-bold tracking-wider uppercase">Reason</th>
                   </tr>
                 </thead>
                 <tbody>
                   <!-- Skeleton Loaders -->
                   <template x-if="isLoading">
                     <template x-for="i in 5">
-                      <tr class="border-t border-white/[.03] animate-pulse">
-                        <td class="px-4 py-3"><div class="h-3 w-16 bg-white/5 rounded"></div></td>
-                        <td class="px-4 py-3"><div class="h-3 w-24 bg-white/5 rounded"></div></td>
-                        <td class="px-4 py-3"><div class="h-3 w-12 bg-white/5 rounded"></div></td>
-                        <td class="px-4 py-3"><div class="h-3 w-20 bg-white/5 rounded"></div></td>
-                        <td class="px-4 py-3"><div class="h-3 w-8 bg-white/5 rounded"></div></td>
-                        <td class="px-4 py-3"><div class="h-3 w-16 bg-white/5 rounded"></div></td>
-                        <td class="px-4 py-3"><div class="h-3 w-32 bg-white/5 rounded"></div></td>
+                      <tr class="border-b border-zinc-800/50 animate-pulse bg-zinc-900">
+                        <td class="px-3 py-2"><div class="h-2 w-12 bg-zinc-800 rounded-sm"></div></td>
+                        <td class="px-3 py-2"><div class="h-2 w-20 bg-zinc-800 rounded-sm"></div></td>
+                        <td class="px-3 py-2"><div class="h-2 w-8 bg-zinc-800 rounded-sm"></div></td>
+                        <td class="px-3 py-2"><div class="h-2 w-16 bg-zinc-800 rounded-sm"></div></td>
+                        <td class="px-3 py-2"><div class="h-2 w-6 bg-zinc-800 rounded-sm"></div></td>
+                        <td class="px-3 py-2"><div class="h-2 w-12 bg-zinc-800 rounded-sm"></div></td>
+                        <td class="px-3 py-2"><div class="h-2 w-28 bg-zinc-800 rounded-sm"></div></td>
                       </tr>
                     </template>
                   </template>
                   <!-- Empty State -->
                   <tr x-show="!isLoading && filteredLogs.length === 0" x-cloak>
-                    <td colspan="7" class="px-4 py-16 text-center">
-                      <div class="flex flex-col items-center justify-center text-gray-500">
-                        <svg class="w-12 h-12 mb-3 text-emerald-500/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                        <p class="text-sm font-semibold text-white">System Secure</p>
-                        <p class="text-xs mt-1">No threats detected matching criteria.</p>
+                    <td colspan="7" class="px-3 py-12 text-center bg-zinc-900 border-b border-zinc-800">
+                      <div class="flex flex-col items-center justify-center text-zinc-600">
+                        <svg class="w-8 h-8 mb-2 text-cyan-900" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest">System Secure</p>
+                        <p class="text-[10px] mt-1">No threats detected matching criteria.</p>
                       </div>
                     </td>
                   </tr>
                   <template x-for="(log,i) in filteredLogs" :key="i">
                     <tr
-                      class="border-t border-white/[.03] hover:bg-white/[.05] transition-colors cursor-pointer"
+                      class="border-b border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer bg-zinc-900"
                       @click="openModal(log, 'live')"
                       x-show="log.visible"
-                      x-transition:enter="transition ease-out duration-300"
-                      x-transition:enter-start="opacity-0 -translate-y-2"
-                      x-transition:enter-end="opacity-100 translate-y-0"
+                      x-transition:enter="transition ease-out duration-200"
+                      x-transition:enter-start="opacity-0"
+                      x-transition:enter-end="opacity-100"
                     >
-                      <td
-                        class="px-4 py-2 text-gray-500"
-                        x-text="log.time"
-                      ></td>
-                      <td class="px-4 py-2 text-cyan-400" x-text="log.ip"></td>
-                      <td
-                        class="px-4 py-2"
-                        :class="log.method==='POST'?'text-yellow-400':'text-gray-400'"
-                        x-text="log.method"
-                      ></td>
-                      <td
-                        class="px-4 py-2 text-gray-300"
-                        x-text="log.path"
-                      ></td>
-                      <td
-                        class="px-4 py-2 font-bold"
-                        :class="log.score>=75?'text-red-400':'text-emerald-400'"
-                        x-text="log.score"
-                      ></td>
-                      <td class="px-4 py-2">
+                      <td class="px-3 py-2 text-zinc-500 whitespace-nowrap" x-text="log.time"></td>
+                      <td class="px-3 py-2 text-cyan-400" x-text="log.ip"></td>
+                      <td class="px-3 py-2 font-bold" :class="log.method==='POST'?'text-yellow-400':'text-zinc-400'" x-text="log.method"></td>
+                      <td class="px-3 py-2 text-zinc-300" x-text="log.path"></td>
+                      <td class="px-3 py-2 font-bold" :class="log.score>=75?'text-rose-500':'text-cyan-400'" x-text="log.score"></td>
+                      <td class="px-3 py-2">
                         <span
-                          class="px-1.5 py-0.5 rounded text-[10px]"
-                          :class="log.status==='BLOCKED'?'bg-red-500/10 text-red-400':'bg-emerald-500/10 text-emerald-400'"
+                          class="px-1 py-0.5 border text-[9px] font-bold uppercase tracking-wider"
+                          :class="log.status==='BLOCKED'?'border-rose-500 text-rose-500':'border-cyan-400 text-cyan-400'"
                           x-text="log.status"
                         ></span>
                       </td>
-                      <td
-                        class="px-4 py-2 text-gray-500 max-w-[200px] truncate"
-                        x-text="log.reason"
-                      ></td>
+                      <td class="px-3 py-2 text-zinc-500 max-w-[200px] truncate" x-text="log.reason"></td>
                     </tr>
                   </template>
                 </tbody>
@@ -397,33 +416,33 @@
           <!-- === THREATS TAB === -->
           <div x-show="currentTab==='threats'" x-cloak>
             <div class="flex items-center justify-between mb-6">
-              <h2 class="text-lg font-bold text-white">Threat Intelligence</h2>
-              <div class="flex items-center gap-2 text-xs font-mono text-gray-500"><div class="w-2 h-2 rounded-full bg-red-400 animate-pulse"></div>Real-time Monitoring</div>
+              <h2 class="text-lg font-mono font-bold uppercase tracking-widest text-zinc-100">Threat Intelligence</h2>
+              <div class="flex items-center gap-2 text-[10px] font-mono text-zinc-500 uppercase tracking-wider"><div class="w-2 h-2 bg-rose-500 animate-pulse"></div>Real-time Monitoring</div>
             </div>
 
             <!-- Severity Cards -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div class="glass rounded-xl p-4 border-l-2 border-red-500"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Critical</p><p class="text-2xl font-bold text-red-400">47</p><p class="text-[10px] text-gray-600 mt-1">Score ≥ 90</p></div>
-              <div class="glass rounded-xl p-4 border-l-2 border-orange-500"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">High</p><p class="text-2xl font-bold text-orange-400">128</p><p class="text-[10px] text-gray-600 mt-1">Score 75-89</p></div>
-              <div class="glass rounded-xl p-4 border-l-2 border-yellow-500"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Medium</p><p class="text-2xl font-bold text-yellow-400">89</p><p class="text-[10px] text-gray-600 mt-1">Score 50-74</p></div>
-              <div class="glass rounded-xl p-4 border-l-2 border-emerald-500"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Low</p><p class="text-2xl font-bold text-emerald-400">78</p><p class="text-[10px] text-gray-600 mt-1">Score < 50</p></div>
+              <div class="bg-zinc-900 rounded-sm border border-zinc-800 p-4 border-l-2 border-l-rose-500"><p class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1">Critical</p><p class="text-2xl font-mono font-black text-rose-500">47</p><p class="text-[10px] font-mono text-zinc-600 mt-1">Score >= 90</p></div>
+              <div class="bg-zinc-900 rounded-sm border border-zinc-800 p-4 border-l-2 border-l-orange-500"><p class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1">High</p><p class="text-2xl font-mono font-black text-orange-400">128</p><p class="text-[10px] font-mono text-zinc-600 mt-1">Score 75-89</p></div>
+              <div class="bg-zinc-900 rounded-sm border border-zinc-800 p-4 border-l-2 border-l-yellow-500"><p class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1">Medium</p><p class="text-2xl font-mono font-black text-yellow-400">89</p><p class="text-[10px] font-mono text-zinc-600 mt-1">Score 50-74</p></div>
+              <div class="bg-zinc-900 rounded-sm border border-zinc-800 p-4 border-l-2 border-l-cyan-400"><p class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1">Low</p><p class="text-2xl font-mono font-black text-cyan-400">78</p><p class="text-[10px] font-mono text-zinc-600 mt-1">Score < 50</p></div>
             </div>
 
             <div class="grid lg:grid-cols-2 gap-4 mb-6">
               <!-- Top Attackers -->
-              <div class="glass rounded-xl p-4">
-                <h3 class="text-sm font-semibold text-white mb-4">Top Attacker IPs</h3>
+              <div class="bg-zinc-900 rounded-sm border border-zinc-800 p-4">
+                <h3 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 mb-4">Top Attacker IPs</h3>
                 <div class="space-y-3">
                   <template x-for="(a,i) in [{ip:'45.33.32.156',count:87,country:'CN'},{ip:'185.220.101.34',count:64,country:'RU'},{ip:'23.129.64.210',count:51,country:'US'},{ip:'103.152.220.44',count:38,country:'VN'},{ip:'91.219.236.18',count:29,country:'DE'}]" :key="i">
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between font-mono">
                       <div class="flex items-center gap-3">
-                        <span class="text-xs font-mono text-gray-600 w-4" x-text="i+1"></span>
-                        <span class="text-xs font-mono text-cyan-400" x-text="a.ip"></span>
-                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-gray-500" x-text="a.country"></span>
+                        <span class="text-[10px] text-zinc-600 w-4" x-text="i+1"></span>
+                        <span class="text-[10px] text-cyan-400" x-text="a.ip"></span>
+                        <span class="text-[9px] px-1 border border-zinc-700 bg-zinc-950 text-zinc-500" x-text="a.country"></span>
                       </div>
                       <div class="flex items-center gap-2">
-                        <div class="w-24 h-1.5 rounded-full bg-gray-800 overflow-hidden"><div class="h-full rounded-full bg-red-500" :style="'width:'+Math.round(a.count/87*100)+'%'"></div></div>
-                        <span class="text-xs font-mono text-red-400 w-8 text-right" x-text="a.count"></span>
+                        <div class="w-24 h-1 bg-zinc-950 border border-zinc-800"><div class="h-full bg-rose-500" :style="'width:'+Math.round(a.count/87*100)+'%'"></div></div>
+                        <span class="text-[10px] text-rose-500 font-bold w-6 text-right" x-text="a.count"></span>
                       </div>
                     </div>
                   </template>
@@ -431,13 +450,13 @@
               </div>
 
               <!-- Attack Types -->
-              <div class="glass rounded-xl p-4">
-                <h3 class="text-sm font-semibold text-white mb-4">Attack Vector Breakdown</h3>
+              <div class="bg-zinc-900 rounded-sm border border-zinc-800 p-4">
+                <h3 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 mb-4">Vector Breakdown</h3>
                 <div class="space-y-3">
-                  <template x-for="v in [{name:'SQL Injection',pct:41,color:'bg-red-500'},{name:'Cross-Site Scripting',pct:26,color:'bg-yellow-500'},{name:'Path Traversal',pct:19,color:'bg-purple-500'},{name:'Remote Code Execution',pct:13,color:'bg-cyan-500'},{name:'Command Injection',pct:8,color:'bg-orange-500'}]" :key="v.name">
+                  <template x-for="v in [{name:'SQL Injection',pct:41,color:'bg-rose-500'},{name:'Cross-Site Scripting',pct:26,color:'bg-orange-500'},{name:'Path Traversal',pct:19,color:'bg-purple-500'},{name:'Remote Code Execution',pct:13,color:'bg-cyan-400'},{name:'Command Injection',pct:8,color:'bg-yellow-500'}]" :key="v.name">
                     <div>
-                      <div class="flex items-center justify-between mb-1"><span class="text-xs text-gray-400" x-text="v.name"></span><span class="text-xs font-mono text-gray-500" x-text="v.pct+'%'"></span></div>
-                      <div class="w-full h-1.5 rounded-full bg-gray-800 overflow-hidden"><div class="h-full rounded-full transition-all" :class="v.color" :style="'width:'+v.pct+'%'"></div></div>
+                      <div class="flex items-center justify-between mb-1 font-mono"><span class="text-[10px] text-zinc-400 uppercase tracking-wider" x-text="v.name"></span><span class="text-[10px] text-zinc-500" x-text="v.pct+'%'"></span></div>
+                      <div class="w-full h-1 border border-zinc-800 bg-zinc-950"><div class="h-full" :class="v.color" :style="'width:'+v.pct+'%'"></div></div>
                     </div>
                   </template>
                 </div>
@@ -445,31 +464,31 @@
             </div>
 
             <!-- Recent Blocked -->
-            <div class="glass rounded-xl overflow-hidden">
-              <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-b border-white/5 gap-3">
+            <div class="bg-zinc-900 rounded-sm border border-zinc-800 overflow-hidden">
+              <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-b border-zinc-800 gap-3">
                 <div class="flex items-center justify-between w-full sm:w-auto">
-                  <h3 class="text-sm font-semibold text-white">Recent Blocked Requests</h3>
-                  <span class="text-[10px] font-mono text-gray-600 sm:hidden">Last 24 hours</span>
+                  <h3 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100">Recent Blocked</h3>
+                  <span class="text-[10px] font-mono text-zinc-600 sm:hidden">Last 24 hours</span>
                 </div>
                 <div class="flex-1 flex items-center justify-end gap-3 w-full sm:w-auto">
-                  <input type="text" x-model="threatSearchQuery" placeholder="Search IP, vector, payload..." class="w-full sm:max-w-[250px] px-3 py-1.5 rounded-lg bg-gray-900/80 border border-white/10 text-[10px] font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
-                  <span class="text-[10px] font-mono text-gray-600 hidden sm:block whitespace-nowrap" x-text="filteredThreats.length+' results'"></span>
+                  <input type="text" x-model="threatSearchQuery" placeholder="Search IP, vector..." class="w-full sm:max-w-[200px] px-3 py-1 border border-zinc-800 bg-zinc-950 text-[10px] font-mono text-zinc-100 rounded-sm focus:border-rose-500 focus:outline-none transition-colors">
+                  <span class="text-[10px] font-mono text-zinc-600 hidden sm:block whitespace-nowrap" x-text="filteredThreats.length+' results'"></span>
                 </div>
               </div>
               <div class="overflow-y-auto log-scroll" style="max-height:360px">
-                <table class="w-full text-xs font-mono">
-                  <thead class="sticky top-0" style="background:#0d1321">
-                    <tr class="text-gray-600 text-left"><th class="px-4 py-2 font-medium">TIME</th><th class="px-4 py-2 font-medium">SOURCE IP</th><th class="px-4 py-2 font-medium">VECTOR</th><th class="px-4 py-2 font-medium">TARGET</th><th class="px-4 py-2 font-medium">SCORE</th><th class="px-4 py-2 font-medium">PAYLOAD SNIPPET</th></tr>
+                <table class="w-full text-[10px] font-mono font-light">
+                  <thead class="sticky top-0 bg-zinc-950 border-b border-zinc-800">
+                    <tr class="text-zinc-500 text-left"><th class="px-3 py-2 font-bold uppercase tracking-wider">Time</th><th class="px-3 py-2 font-bold uppercase tracking-wider">Source IP</th><th class="px-3 py-2 font-bold uppercase tracking-wider">Vector</th><th class="px-3 py-2 font-bold uppercase tracking-wider">Target</th><th class="px-3 py-2 font-bold uppercase tracking-wider">Score</th><th class="px-3 py-2 font-bold uppercase tracking-wider">Payload Snippet</th></tr>
                   </thead>
                   <tbody>
                     <template x-for="(b,i) in filteredThreats" :key="i">
-                      <tr class="border-t border-white/[.03] hover:bg-white/[.05] transition-colors cursor-pointer" @click="openModal(b, 'blocked')">
-                        <td class="px-4 py-2 text-gray-500" x-text="b.time"></td>
-                        <td class="px-4 py-2 text-cyan-400" x-text="b.ip"></td>
-                        <td class="px-4 py-2"><span class="px-1.5 py-0.5 rounded text-[10px] bg-red-500/10 text-red-400" x-text="b.vector"></span></td>
-                        <td class="px-4 py-2 text-gray-300" x-text="b.target"></td>
-                        <td class="px-4 py-2 text-red-400 font-bold" x-text="b.score"></td>
-                        <td class="px-4 py-2 text-gray-500 max-w-[250px] truncate" x-text="b.payload"></td>
+                      <tr class="border-b border-zinc-800 hover:bg-zinc-800 transition-colors cursor-pointer bg-zinc-900" @click="openModal(b, 'blocked')">
+                        <td class="px-3 py-2 text-zinc-500 whitespace-nowrap" x-text="b.time"></td>
+                        <td class="px-3 py-2 text-cyan-400" x-text="b.ip"></td>
+                        <td class="px-3 py-2"><span class="px-1 border border-rose-500 text-rose-500 text-[9px] font-bold uppercase" x-text="b.vector"></span></td>
+                        <td class="px-3 py-2 text-zinc-300" x-text="b.target"></td>
+                        <td class="px-3 py-2 text-rose-500 font-bold" x-text="b.score"></td>
+                        <td class="px-3 py-2 text-zinc-500 max-w-[250px] truncate" x-text="b.payload"></td>
                       </tr>
                     </template>
                   </tbody>
@@ -480,41 +499,41 @@
 
           <!-- === ANALYTICS TAB === -->
           <div x-show="currentTab==='analytics'" x-cloak>
-            <h2 class="text-lg font-bold text-white mb-6">Analytics & Performance</h2>
+            <h2 class="text-lg font-mono font-bold uppercase tracking-widest text-zinc-100 mb-6">Analytics & Performance</h2>
 
             <!-- Perf Stats -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div class="glass rounded-xl p-4"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Requests/min</p><p class="text-2xl font-bold text-white">214</p></div>
-              <div class="glass rounded-xl p-4"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Block Rate</p><p class="text-2xl font-bold text-red-400">2.7%</p></div>
-              <div class="glass rounded-xl p-4"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">P99 Latency</p><p class="text-2xl font-bold text-yellow-400">142ms</p></div>
-              <div class="glass rounded-xl p-4"><p class="text-[10px] font-mono text-gray-500 uppercase tracking-wider mb-1">Uptime</p><p class="text-2xl font-bold text-emerald-400">99.97%</p></div>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-4"><p class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1">Requests/min</p><p class="text-2xl font-mono font-black text-cyan-400">214</p></div>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-4"><p class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1">Block Rate</p><p class="text-2xl font-mono font-black text-rose-500">2.7%</p></div>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-4"><p class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1">P99 Latency</p><p class="text-2xl font-mono font-black text-yellow-400">142ms</p></div>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-4"><p class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider mb-1">Uptime</p><p class="text-2xl font-mono font-black text-cyan-400">99.97%</p></div>
             </div>
 
             <div class="grid lg:grid-cols-2 gap-4 mb-6">
               <!-- Response Time -->
-              <div class="glass rounded-xl p-4">
-                <h3 class="text-sm font-semibold text-white mb-4">Response Time Distribution</h3>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-4">
+                <h3 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 mb-4">Latency Distribution</h3>
                 <div style="position:relative;height:220px"><canvas id="responseChart"></canvas></div>
               </div>
               <!-- Hourly -->
-              <div class="glass rounded-xl p-4">
-                <h3 class="text-sm font-semibold text-white mb-4">Hourly Request Volume</h3>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-4">
+                <h3 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 mb-4">Volume History</h3>
                 <div style="position:relative;height:220px"><canvas id="hourlyChart"></canvas></div>
               </div>
             </div>
 
             <!-- Geo Data -->
-            <div class="glass rounded-xl p-4">
-              <h3 class="text-sm font-semibold text-white mb-4">Geographic Origin</h3>
+            <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-4">
+              <h3 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 mb-4">Geographic Origin</h3>
               <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <template x-for="g in [{country:'United States',code:'US',reqs:3842,blocked:89},{country:'China',code:'CN',reqs:2156,blocked:412},{country:'Russia',code:'RU',reqs:1847,blocked:367},{country:'Germany',code:'DE',reqs:1203,blocked:23},{country:'Vietnam',code:'VN',reqs:987,blocked:198},{country:'Brazil',code:'BR',reqs:876,blocked:34},{country:'India',code:'IN',reqs:743,blocked:56},{country:'Japan',code:'JP',reqs:612,blocked:8},{country:'Indonesia',code:'ID',reqs:534,blocked:45},{country:'Netherlands',code:'NL',reqs:498,blocked:67}]" :key="g.code">
-                  <div class="glass rounded-lg p-3 hover:bg-white/[.02] transition-colors">
+                  <div class="border border-zinc-800 rounded-sm p-3 hover:bg-zinc-800 transition-colors bg-zinc-950">
                     <div class="flex items-center justify-between mb-2">
-                      <span class="text-xs font-bold text-white" x-text="g.code"></span>
-                      <span class="text-[10px] font-mono" :class="g.blocked>100?'text-red-400':'text-gray-500'" x-text="g.blocked+' blocked'"></span>
+                      <span class="text-xs font-mono font-bold text-zinc-100" x-text="g.code"></span>
+                      <span class="text-[9px] font-mono" :class="g.blocked>100?'text-rose-500':'text-zinc-500'" x-text="g.blocked+' blocked'"></span>
                     </div>
-                    <p class="text-[10px] text-gray-500 truncate" x-text="g.country"></p>
-                    <p class="text-xs font-mono text-cyan-400 mt-1" x-text="g.reqs.toLocaleString()+' reqs'"></p>
+                    <p class="text-[10px] text-zinc-500 truncate" x-text="g.country"></p>
+                    <p class="text-[10px] font-mono font-bold text-cyan-400 mt-1" x-text="g.reqs.toLocaleString()+' reqs'"></p>
                   </div>
                 </template>
               </div>
@@ -541,8 +560,8 @@
             save() { this.saved = true; setTimeout(() => this.saved = false, 2000); }
           }">
             <div class="flex items-center justify-between mb-6">
-              <h2 class="text-lg font-bold text-white">System Configuration</h2>
-              <button @click="save()" class="px-4 py-2 text-xs font-semibold rounded-lg transition-all" :class="saved ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-600 hover:bg-emerald-500 text-white'">
+              <h2 class="text-lg font-mono font-bold uppercase tracking-widest text-zinc-100">System Configuration</h2>
+              <button @click="save()" class="px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider rounded-sm transition-all border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-zinc-950" :class="saved ? 'bg-cyan-400 text-zinc-950' : ''">
                 <span x-show="!saved">Save Changes</span>
                 <span x-show="saved">✓ Saved</span>
               </button>
@@ -550,82 +569,82 @@
 
             <div class="grid lg:grid-cols-2 gap-4">
               <!-- Proxy Config -->
-              <div class="glass rounded-xl p-5 space-y-4">
-                <h3 class="text-sm font-semibold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-400"></span>Proxy Configuration</h3>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-5 space-y-4">
+                <h3 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 flex items-center gap-2"><span class="w-2 h-2 bg-cyan-400"></span>Proxy Configuration</h3>
                 <div>
-                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Proxy Listen Port</label>
-                  <input type="text" x-model="proxyPort" class="w-full mt-1 px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-sm font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                  <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Proxy Listen Port</label>
+                  <input type="text" x-model="proxyPort" class="w-full mt-1 px-3 py-2 rounded-sm border border-zinc-800 bg-zinc-950 text-xs font-mono text-zinc-100 focus:border-cyan-400 focus:outline-none transition-colors">
                 </div>
                 <div>
-                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Application Port (Upstream)</label>
-                  <input type="text" x-model="appPort" class="w-full mt-1 px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-sm font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                  <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Application Port (Upstream)</label>
+                  <input type="text" x-model="appPort" class="w-full mt-1 px-3 py-2 rounded-sm border border-zinc-800 bg-zinc-950 text-xs font-mono text-zinc-100 focus:border-cyan-400 focus:outline-none transition-colors">
                 </div>
                 <div>
-                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Cloud Run Brain URL</label>
-                  <input type="text" x-model="brainUrl" class="w-full mt-1 px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-sm font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                  <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Cloud Run Brain URL</label>
+                  <input type="text" x-model="brainUrl" class="w-full mt-1 px-3 py-2 rounded-sm border border-zinc-800 bg-zinc-950 text-xs font-mono text-zinc-100 focus:border-cyan-400 focus:outline-none transition-colors">
                 </div>
                 <div>
-                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">API Key</label>
+                  <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">API Key</label>
                   <div class="flex gap-2 mt-1">
-                    <input :type="showKey?'text':'password'" x-model="apiKey" class="flex-1 px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-sm font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
-                    <button @click="showKey=!showKey" class="px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-gray-500 hover:text-white text-xs transition-colors" x-text="showKey?'Hide':'Show'"></button>
+                    <input :type="showKey?'text':'password'" x-model="apiKey" class="flex-1 px-3 py-2 rounded-sm border border-zinc-800 bg-zinc-950 text-xs font-mono text-zinc-100 focus:border-cyan-400 focus:outline-none transition-colors">
+                    <button @click="showKey=!showKey" class="px-3 py-2 rounded-sm border border-zinc-800 bg-zinc-950 text-zinc-500 hover:text-zinc-100 text-xs font-mono uppercase tracking-wider transition-colors" x-text="showKey?'Hide':'Show'"></button>
                   </div>
                 </div>
               </div>
 
               <!-- Gemini Config -->
-              <div class="glass rounded-xl p-5 space-y-4">
-                <h3 class="text-sm font-semibold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Gemini AI Engine</h3>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-5 space-y-4">
+                <h3 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 flex items-center gap-2"><span class="w-2 h-2 bg-purple-500"></span>Gemini AI Engine</h3>
                 <div>
-                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Model</label>
-                  <select x-model="geminiModel" class="w-full mt-1 px-3 py-2 rounded-lg bg-gray-900/80 border border-white/10 text-sm font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                  <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Model</label>
+                  <select x-model="geminiModel" class="w-full mt-1 px-3 py-2 rounded-sm border border-zinc-800 bg-zinc-950 text-xs font-mono text-zinc-100 focus:border-cyan-400 focus:outline-none transition-colors appearance-none">
                     <option value="gemini-2.0-flash">gemini-2.0-flash (Fast)</option>
                     <option value="gemini-2.5-flash">gemini-2.5-flash (Balanced)</option>
                     <option value="gemini-2.5-pro">gemini-2.5-pro (Accurate)</option>
                   </select>
                 </div>
                 <div>
-                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider flex items-center justify-between">Crime Coefficient Threshold <span class="text-emerald-400" x-text="threshold"></span></label>
-                  <input type="range" min="50" max="100" x-model="threshold" class="w-full mt-1 accent-emerald-500">
-                  <div class="flex justify-between text-[10px] text-gray-600 font-mono"><span>50 (Strict)</span><span>100 (Lenient)</span></div>
+                  <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center justify-between">Crime Coefficient Threshold <span class="text-rose-500 font-bold" x-text="threshold"></span></label>
+                  <input type="range" min="50" max="100" x-model="threshold" class="w-full mt-1 accent-rose-500">
+                  <div class="flex justify-between text-[10px] text-zinc-600 font-mono"><span>50 (Strict)</span><span>100 (Lenient)</span></div>
                 </div>
                 <div>
-                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider flex items-center justify-between">Context Timeout (ms) <span class="text-cyan-400" x-text="timeout+'ms'"></span></label>
-                  <input type="range" min="500" max="5000" step="100" x-model="timeout" class="w-full mt-1 accent-cyan-500">
+                  <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center justify-between">Context Timeout (ms) <span class="text-cyan-400 font-bold" x-text="timeout+'ms'"></span></label>
+                  <input type="range" min="500" max="5000" step="100" x-model="timeout" class="w-full mt-1 accent-cyan-400">
                 </div>
                 <div>
-                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider flex items-center justify-between">Max Payload Size <span class="text-white" x-text="maxPayload+'MB'"></span></label>
-                  <input type="range" min="1" max="10" x-model="maxPayload" class="w-full mt-1 accent-cyan-500">
+                  <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center justify-between">Max Payload Size <span class="text-zinc-100 font-bold" x-text="maxPayload+'MB'"></span></label>
+                  <input type="range" min="1" max="10" x-model="maxPayload" class="w-full mt-1 accent-zinc-500">
                 </div>
               </div>
 
               <!-- Cache Config -->
-              <div class="glass rounded-xl p-5 space-y-4">
-                <h3 class="text-sm font-semibold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-yellow-400"></span>Cache (sync.Map)</h3>
-                <div class="flex items-center justify-between">
-                  <div><p class="text-sm text-white">Enable Cache</p><p class="text-[10px] text-gray-500">Cache safe results to reduce API calls</p></div>
-                  <button @click="enableCache=!enableCache" class="w-10 h-5 rounded-full transition-colors relative" :class="enableCache?'bg-emerald-500':'bg-gray-700'"><span class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all" :class="enableCache?'left-5':'left-0.5'"></span></button>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-5 space-y-4">
+                <h3 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 flex items-center gap-2"><span class="w-2 h-2 bg-yellow-500"></span>Cache (sync.Map)</h3>
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+                  <div><p class="text-xs font-mono uppercase text-zinc-300">Enable Cache</p><p class="text-[10px] font-mono text-zinc-500">Cache safe results to reduce API calls</p></div>
+                  <button @click="enableCache=!enableCache" class="w-10 h-5 rounded-sm border border-zinc-700 transition-colors relative" :class="enableCache?'bg-cyan-400':'bg-zinc-950'"><span class="absolute top-0.5 w-4 h-4 rounded-sm bg-zinc-900 border border-zinc-700 transition-all" :class="enableCache?'left-5':'left-0.5'"></span></button>
                 </div>
                 <div>
-                  <label class="text-[10px] font-mono text-gray-500 uppercase tracking-wider flex items-center justify-between">TTL (seconds) <span class="text-yellow-400" x-text="cacheTTL+'s'"></span></label>
+                  <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center justify-between">TTL (seconds) <span class="text-yellow-400 font-bold" x-text="cacheTTL+'s'"></span></label>
                   <input type="range" min="60" max="900" step="30" x-model="cacheTTL" class="w-full mt-1 accent-yellow-500">
                 </div>
               </div>
 
               <!-- Security Policy -->
-              <div class="glass rounded-xl p-5 space-y-4">
-                <h3 class="text-sm font-semibold text-white flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-400"></span>Security Policy</h3>
-                <div class="flex items-center justify-between">
-                  <div><p class="text-sm text-white">Fail-Closed Mode</p><p class="text-[10px] text-gray-500">Return 503 on timeout instead of passing through</p></div>
-                  <button @click="failClosed=!failClosed" class="w-10 h-5 rounded-full transition-colors relative" :class="failClosed?'bg-emerald-500':'bg-gray-700'"><span class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all" :class="failClosed?'left-5':'left-0.5'"></span></button>
+              <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-5 space-y-4">
+                <h3 class="text-sm font-mono font-bold uppercase tracking-widest text-zinc-100 flex items-center gap-2"><span class="w-2 h-2 bg-rose-500"></span>Security Policy</h3>
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+                  <div><p class="text-xs font-mono uppercase text-zinc-300">Fail-Closed Mode</p><p class="text-[10px] font-mono text-zinc-500">Return 503 on timeout</p></div>
+                  <button @click="failClosed=!failClosed" class="w-10 h-5 rounded-sm border border-zinc-700 transition-colors relative" :class="failClosed?'bg-rose-500':'bg-zinc-950'"><span class="absolute top-0.5 w-4 h-4 rounded-sm bg-zinc-900 border border-zinc-700 transition-all" :class="failClosed?'left-5':'left-0.5'"></span></button>
+                </div>
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+                  <div><p class="text-xs font-mono uppercase text-zinc-300">Log Blocked Requests</p><p class="text-[10px] font-mono text-zinc-500">Record all blocked attempts</p></div>
+                  <button @click="logBlocked=!logBlocked" class="w-10 h-5 rounded-sm border border-zinc-700 transition-colors relative" :class="logBlocked?'bg-cyan-400':'bg-zinc-950'"><span class="absolute top-0.5 w-4 h-4 rounded-sm bg-zinc-900 border border-zinc-700 transition-all" :class="logBlocked?'left-5':'left-0.5'"></span></button>
                 </div>
                 <div class="flex items-center justify-between">
-                  <div><p class="text-sm text-white">Log Blocked Requests</p><p class="text-[10px] text-gray-500">Record all blocked requests to log feed</p></div>
-                  <button @click="logBlocked=!logBlocked" class="w-10 h-5 rounded-full transition-colors relative" :class="logBlocked?'bg-emerald-500':'bg-gray-700'"><span class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all" :class="logBlocked?'left-5':'left-0.5'"></span></button>
-                </div>
-                <div class="flex items-center justify-between">
-                  <div><p class="text-sm text-white">Log Passed Requests</p><p class="text-[10px] text-gray-500">Also record safe requests (verbose)</p></div>
-                  <button @click="logPassed=!logPassed" class="w-10 h-5 rounded-full transition-colors relative" :class="logPassed?'bg-emerald-500':'bg-gray-700'"><span class="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all" :class="logPassed?'left-5':'left-0.5'"></span></button>
+                  <div><p class="text-xs font-mono uppercase text-zinc-300">Log Passed Requests</p><p class="text-[10px] font-mono text-zinc-500">Record safe requests (verbose)</p></div>
+                  <button @click="logPassed=!logPassed" class="w-10 h-5 rounded-sm border border-zinc-700 transition-colors relative" :class="logPassed?'bg-cyan-400':'bg-zinc-950'"><span class="absolute top-0.5 w-4 h-4 rounded-sm bg-zinc-900 border border-zinc-700 transition-all" :class="logPassed?'left-5':'left-0.5'"></span></button>
                 </div>
               </div>
             </div>

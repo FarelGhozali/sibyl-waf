@@ -26,7 +26,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Fira+Code:wght@300;400;500;600;700;800;900&amp;display=swap"
       rel="stylesheet"
     />
     <script>
@@ -47,20 +47,10 @@
               },
             },
             animation: {
-              "pulse-glow": "pulseGlow 3s ease-in-out infinite",
-              float: "float 6s ease-in-out infinite",
               scan: "scan 4s linear infinite",
               "fade-up": "fadeUp 0.8s ease-out forwards",
             },
             keyframes: {
-              pulseGlow: {
-                "0%, 100%": { opacity: "0.4" },
-                "50%": { opacity: "1" },
-              },
-              float: {
-                "0%, 100%": { transform: "translateY(0px)" },
-                "50%": { transform: "translateY(-20px)" },
-              },
               scan: {
                 "0%": { transform: "translateY(-100%)" },
                 "100%": { transform: "translateY(100%)" },
@@ -75,15 +65,30 @@
       };
     </script>
     <link rel="stylesheet" href="css/index.css" />
+    <style>
+      .grid-bg {
+        background-image:
+          linear-gradient(rgba(39, 39, 42, 0.4) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(39, 39, 42, 0.4) 1px, transparent 1px) !important;
+      }
+      .scanline {
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(34, 211, 238, 0.2),
+          transparent
+        ) !important;
+      }
+    </style>
   </head>
   <body
-    class="font-sans text-gray-300 antialiased overflow-x-hidden grid-bg"
+    class="font-sans text-zinc-100 bg-zinc-950 antialiased overflow-x-hidden grid-bg"
     x-data="{ shown: false, activeSection: '' }"
     x-init="setTimeout(() => shown = true, 100)"
   >
     <!-- Nav -->
     <nav
-      class="fixed top-0 w-full z-50 glass-strong"
+      class="fixed top-0 w-full z-50 bg-zinc-950 border-b border-zinc-800"
       x-data="{ mobileMenuOpen: false }"
     >
       <div
@@ -91,28 +96,10 @@
       >
         <a
           href="/"
-          class="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] rounded-lg"
+          class="flex items-center gap-3 group focus:outline-none focus:ring-1 focus:ring-cyan-400 rounded-sm"
         >
-          <div
-            class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:shadow-emerald-500/40 transition-shadow"
-          >
-            <svg
-              class="w-5 h-5 text-white"
-              aria-hidden="true"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
-              />
-            </svg>
-          </div>
-          <span class="text-white font-bold text-lg tracking-tight"
-            >Sibyl<span class="text-emerald-400">-WAF</span></span
+          <span class="text-zinc-100 font-mono font-bold text-lg tracking-tight"
+            >Sibyl<span class="text-cyan-400">-WAF</span></span
           >
         </a>
 
@@ -120,25 +107,25 @@
         <div class="hidden md:flex items-center gap-8">
           <a
             href="#features"
-            :class="activeSection === 'features' ? 'text-emerald-400 font-semibold drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'text-gray-400'"
-            class="text-sm hover:text-emerald-400 focus:outline-none focus:text-emerald-400 transition-all duration-300"
+            :class="activeSection === 'features' ? 'text-cyan-400 font-semibold' : 'text-zinc-400'"
+            class="text-sm font-mono hover:text-cyan-400 focus:outline-none focus:text-cyan-400 transition-colors"
             >Features</a
           >
           <a
             href="#architecture"
-            :class="activeSection === 'architecture' ? 'text-emerald-400 font-semibold drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'text-gray-400'"
-            class="text-sm hover:text-emerald-400 focus:outline-none focus:text-emerald-400 transition-all duration-300"
+            :class="activeSection === 'architecture' ? 'text-cyan-400 font-semibold' : 'text-zinc-400'"
+            class="text-sm font-mono hover:text-cyan-400 focus:outline-none focus:text-cyan-400 transition-colors"
             >Architecture</a
           >
           <a
             href="#how-it-works"
-            :class="activeSection === 'how-it-works' ? 'text-emerald-400 font-semibold drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'text-gray-400'"
-            class="text-sm hover:text-emerald-400 focus:outline-none focus:text-emerald-400 transition-all duration-300"
+            :class="activeSection === 'how-it-works' ? 'text-cyan-400 font-semibold' : 'text-zinc-400'"
+            class="text-sm font-mono hover:text-cyan-400 focus:outline-none focus:text-cyan-400 transition-colors"
             >How It Works</a
           >
           <a
             href="/dashboard"
-            class="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-lg hover:from-emerald-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40"
+            class="px-4 py-2 text-sm font-mono font-bold text-cyan-400 bg-transparent border border-cyan-400 rounded-sm hover:bg-cyan-400/10 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors"
             >Dashboard →</a
           >
         </div>
@@ -147,7 +134,7 @@
         <div class="md:hidden flex items-center">
           <button
             @click="mobileMenuOpen = !mobileMenuOpen"
-            class="text-gray-400 hover:text-white focus:outline-none"
+            class="text-zinc-400 hover:text-zinc-100 focus:outline-none"
             aria-label="Toggle mobile menu"
           >
             <svg
@@ -190,33 +177,33 @@
         x-show="mobileMenuOpen"
         x-cloak
         x-collapse
-        class="md:hidden border-t border-white/10 bg-[#050a14]/90 backdrop-blur-xl"
+        class="md:hidden border-t border-zinc-800 bg-zinc-950"
       >
-        <div class="px-6 py-6 space-y-4 flex flex-col">
+        <div class="px-6 py-6 space-y-4 flex flex-col font-mono">
           <a
             href="#features"
             @click="mobileMenuOpen = false"
-            :class="activeSection === 'features' ? 'text-emerald-400 font-bold bg-emerald-500/10 px-4 py-2 rounded-lg' : 'text-gray-300 px-4 py-2'"
-            class="text-base font-medium hover:text-emerald-400 transition-all duration-300 block"
+            :class="activeSection === 'features' ? 'text-cyan-400 font-bold bg-cyan-900/20 px-4 py-2 rounded-sm' : 'text-zinc-300 px-4 py-2'"
+            class="text-base font-medium hover:text-cyan-400 block"
             >Features</a
           >
           <a
             href="#architecture"
             @click="mobileMenuOpen = false"
-            :class="activeSection === 'architecture' ? 'text-emerald-400 font-bold bg-emerald-500/10 px-4 py-2 rounded-lg' : 'text-gray-300 px-4 py-2'"
-            class="text-base font-medium hover:text-emerald-400 transition-all duration-300 block"
+            :class="activeSection === 'architecture' ? 'text-cyan-400 font-bold bg-cyan-900/20 px-4 py-2 rounded-sm' : 'text-zinc-300 px-4 py-2'"
+            class="text-base font-medium hover:text-cyan-400 block"
             >Architecture</a
           >
           <a
             href="#how-it-works"
             @click="mobileMenuOpen = false"
-            :class="activeSection === 'how-it-works' ? 'text-emerald-400 font-bold bg-emerald-500/10 px-4 py-2 rounded-lg' : 'text-gray-300 px-4 py-2'"
-            class="text-base font-medium hover:text-emerald-400 transition-all duration-300 block"
+            :class="activeSection === 'how-it-works' ? 'text-cyan-400 font-bold bg-cyan-900/20 px-4 py-2 rounded-sm' : 'text-zinc-300 px-4 py-2'"
+            class="text-base font-medium hover:text-cyan-400 block"
             >How It Works</a
           >
           <a
             href="/dashboard"
-            class="mt-4 inline-block text-center px-4 py-3 text-base font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-lg shadow-lg shadow-emerald-500/20 hover:from-emerald-500 hover:to-cyan-500"
+            class="mt-4 inline-block text-center px-4 py-3 text-base font-bold text-cyan-400 bg-transparent border border-cyan-400 rounded-sm hover:bg-cyan-400/10"
             >Dashboard →</a
           >
         </div>
@@ -226,11 +213,11 @@
     <main>
       <!-- Hero -->
       <section
-        class="relative min-h-screen flex items-center justify-center hero-gradient pt-16"
+        class="relative min-h-screen flex items-center justify-center pt-16"
         x-intersect:enter.half="activeSection = ''"
       >
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
-          <div class="scanline animate-scan"></div>
+          <div class="scanline animate-scan opacity-20"></div>
         </div>
         <div
           class="max-w-5xl mx-auto px-6 text-center"
@@ -242,25 +229,25 @@
         >
           <!-- Badge -->
           <div
-            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-8"
+            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-sm border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-mono font-medium mb-8 uppercase tracking-wide"
           >
             <span
-              class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+              class="w-2 h-2 bg-cyan-400"
             ></span>
             Powered by Google Gemini AI
           </div>
           <!-- Title -->
           <h1
-            class="text-5xl md:text-7xl font-black text-white leading-tight tracking-tight mb-6"
+            class="text-5xl md:text-7xl font-black text-zinc-100 leading-tight tracking-tight mb-6 uppercase"
           >
             Cognitive Firewall<br />
             <span
-              class="bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent"
+              class="text-cyan-400"
               >for the AI Era</span
             >
           </h1>
           <p
-            class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed"
+            class="text-lg md:text-xl text-zinc-400 max-w-2xl mx-auto mb-10 leading-relaxed font-mono"
           >
             Sibyl-WAF is an intent-based Layer 7 Web Application Firewall that
             leverages LLM reasoning to detect zero-day attacks before they reach
@@ -268,12 +255,12 @@
           </p>
           <!-- CTA -->
           <div
-            class="flex flex-col sm:flex-row items-center justify-center gap-4"
+            class="flex flex-col sm:flex-row items-center justify-center gap-4 font-mono"
           >
             <a
               href="/dashboard"
               id="cta-dashboard"
-              class="group px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-semibold rounded-xl hover:from-emerald-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 flex items-center gap-2"
+              class="group px-8 py-3.5 bg-transparent border border-cyan-400 text-cyan-400 font-bold rounded-sm hover:bg-cyan-400/10 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors flex items-center gap-2 uppercase tracking-wide"
             >
               Open Dashboard
               <svg
@@ -293,14 +280,14 @@
             </a>
             <a
               href="#architecture"
-              class="px-8 py-3.5 text-gray-300 font-semibold rounded-xl border border-white/10 hover:border-emerald-500/30 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all"
+              class="px-8 py-3.5 bg-zinc-900 border border-zinc-800 text-zinc-300 font-bold rounded-sm hover:bg-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-500 transition-colors uppercase tracking-wide"
             >
               View Architecture
             </a>
           </div>
           <!-- Crime Coefficient Preview -->
           <div
-            class="mt-16 glass rounded-2xl p-6 max-w-lg mx-auto glow-green gradient-border"
+            class="mt-16 bg-zinc-900 border border-zinc-800 rounded-sm p-6 max-w-lg mx-auto"
             x-data="{ score: 0 }"
             x-init="
                 let target = 42;
@@ -309,26 +296,26 @@
                 }, 40);
             "
           >
-            <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center justify-between mb-4 border-b border-zinc-800 pb-2">
               <span
-                class="text-xs text-gray-500 font-mono uppercase tracking-widest"
-                >Crime Coefficient</span
+                class="text-xs text-zinc-500 font-mono font-light uppercase tracking-widest"
+                >CRIME COEFFICIENT</span
               >
-              <span class="text-xs text-emerald-400 font-mono"
+              <span class="text-xs text-cyan-400 font-mono font-light tracking-widest uppercase"
                 >STATUS: SAFE</span
               >
             </div>
             <div
-              class="text-6xl font-black font-mono text-emerald-400 text-glow-green"
+              class="text-7xl font-black font-mono text-cyan-400"
               x-text="score"
             ></div>
-            <div class="mt-3 h-1.5 rounded-full bg-gray-800 overflow-hidden">
+            <div class="mt-4 h-1 bg-zinc-950 border border-zinc-800 overflow-hidden">
               <div
-                class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-500"
+                class="h-full bg-cyan-400 transition-all duration-500"
                 :style="'width:' + score + '%'"
               ></div>
             </div>
-            <p class="text-xs text-gray-500 mt-2 font-mono">
+            <p class="text-xs text-zinc-500 mt-4 font-mono uppercase tracking-wide">
               Enforcement Mode: Non-Lethal Paralyzer
             </p>
           </div>
@@ -338,7 +325,7 @@
       <!-- Features -->
       <section
         id="features"
-        class="py-32 relative"
+        class="py-32 relative border-t border-zinc-800"
         x-data="{ shown: false }"
         x-intersect.once="shown = true"
         x-intersect:enter.half="activeSection = 'features'"
@@ -352,10 +339,10 @@
           x-transition:enter-end="opacity-100 translate-y-0"
         >
           <div class="text-center mb-16">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-              Why <span class="text-emerald-400">Sibyl-WAF</span>?
+            <h2 class="text-3xl md:text-4xl font-black text-zinc-100 mb-4 uppercase tracking-tight">
+              Why <span class="text-cyan-400">Sibyl-WAF</span>?
             </h2>
-            <p class="text-gray-500 max-w-xl mx-auto">
+            <p class="text-zinc-400 max-w-xl mx-auto font-mono text-sm">
               Traditional WAFs rely on brittle regex rules. Sibyl thinks like an
               analyst.
             </p>
@@ -363,13 +350,13 @@
           <div class="grid md:grid-cols-3 gap-6">
             <!-- Card 1 -->
             <div
-              class="glass rounded-2xl p-8 hover:glow-green transition-shadow duration-500 gradient-border group"
+              class="bg-zinc-900 border border-zinc-800 rounded-sm p-8 group hover:border-zinc-700 transition-colors"
             >
               <div
-                class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors"
+                class="w-12 h-12 border border-zinc-800 bg-zinc-950 flex items-center justify-center mb-6 rounded-sm group-hover:border-cyan-900 transition-colors"
               >
                 <svg
-                  class="w-6 h-6 text-emerald-400"
+                  class="w-6 h-6 text-zinc-100 group-hover:text-cyan-400 transition-colors"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -382,10 +369,10 @@
                   />
                 </svg>
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">
+              <h3 class="text-xl font-bold text-zinc-100 mb-3 uppercase tracking-wide">
                 AI-Driven Analysis
               </h3>
-              <p class="text-gray-400 text-sm leading-relaxed">
+              <p class="text-zinc-400 text-sm leading-relaxed font-mono">
                 Powered by Gemini LLM, every HTTP request is evaluated for
                 malicious intent using advanced natural language reasoning — not
                 pattern matching.
@@ -393,13 +380,13 @@
             </div>
             <!-- Card 2 -->
             <div
-              class="glass rounded-2xl p-8 hover:glow-red transition-shadow duration-500 gradient-border group"
+              class="bg-zinc-900 border border-zinc-800 rounded-sm p-8 group hover:border-zinc-700 transition-colors"
             >
               <div
-                class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-6 group-hover:bg-red-500/20 transition-colors"
+                class="w-12 h-12 border border-zinc-800 bg-zinc-950 flex items-center justify-center mb-6 rounded-sm group-hover:border-cyan-900 transition-colors"
               >
                 <svg
-                  class="w-6 h-6 text-red-400"
+                  class="w-6 h-6 text-zinc-100 group-hover:text-cyan-400 transition-colors"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -412,10 +399,10 @@
                   />
                 </svg>
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">
+              <h3 class="text-xl font-bold text-zinc-100 mb-3 uppercase tracking-wide">
                 Zero-Day Protection
               </h3>
-              <p class="text-gray-400 text-sm leading-relaxed">
+              <p class="text-zinc-400 text-sm leading-relaxed font-mono">
                 No signature database to update. Sibyl understands attack
                 semantics, catching novel exploits that traditional WAFs miss
                 entirely.
@@ -423,13 +410,13 @@
             </div>
             <!-- Card 3 -->
             <div
-              class="glass rounded-2xl p-8 hover:glow-cyan transition-shadow duration-500 gradient-border group"
+              class="bg-zinc-900 border border-zinc-800 rounded-sm p-8 group hover:border-zinc-700 transition-colors"
             >
               <div
-                class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-6 group-hover:bg-cyan-500/20 transition-colors"
+                class="w-12 h-12 border border-zinc-800 bg-zinc-950 flex items-center justify-center mb-6 rounded-sm group-hover:border-cyan-900 transition-colors"
               >
                 <svg
-                  class="w-6 h-6 text-cyan-400"
+                  class="w-6 h-6 text-zinc-100 group-hover:text-cyan-400 transition-colors"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -442,12 +429,12 @@
                   />
                 </svg>
               </div>
-              <h3 class="text-xl font-bold text-white mb-3">
+              <h3 class="text-xl font-bold text-zinc-100 mb-3 uppercase tracking-wide">
                 Deterministic Gatekeeper
               </h3>
-              <p class="text-gray-400 text-sm leading-relaxed">
+              <p class="text-zinc-400 text-sm leading-relaxed font-mono">
                 Crime Coefficient scoring (0-100) provides a clear, numeric
-                verdict. ≥75 means instant termination. No ambiguity, no false
+                verdict. >=75 means instant termination. No ambiguity, no false
                 negatives.
               </p>
             </div>
@@ -458,7 +445,7 @@
       <!-- Architecture -->
       <section
         id="architecture"
-        class="py-32 relative"
+        class="py-32 relative border-t border-zinc-800"
         x-data="{ shown: false }"
         x-intersect.once="shown = true"
         x-intersect:enter.half="activeSection = 'architecture'"
@@ -472,100 +459,100 @@
           x-transition:enter-end="opacity-100 translate-y-0"
         >
           <div class="text-center mb-16">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 class="text-3xl md:text-4xl font-black text-zinc-100 mb-4 uppercase tracking-tight">
               Distributed <span class="text-cyan-400">Architecture</span>
             </h2>
-            <p class="text-gray-500 max-w-xl mx-auto">
+            <p class="text-zinc-400 max-w-xl mx-auto font-mono text-sm">
               Two microservices. Zero single point of failure. Full isolation.
             </p>
           </div>
           <div class="grid md:grid-cols-2 gap-8">
             <!-- Proxy -->
-            <div class="glass rounded-2xl p-8 gradient-border">
-              <div class="flex items-center gap-3 mb-6">
-                <div
-                  class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse"
-                ></div>
-                <span class="font-mono text-sm text-cyan-400 tracking-wider"
+            <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-8">
+              <div class="flex items-center justify-between border-b border-zinc-800 pb-4 mb-6">
+                <span class="font-mono text-sm text-cyan-400 tracking-widest uppercase"
                   >COMPONENT A</span
                 >
+                <div
+                  class="w-2 h-2 bg-cyan-400"
+                ></div>
               </div>
-              <h3 class="text-2xl font-bold text-white mb-2">Sibyl-Proxy</h3>
-              <p class="text-sm text-gray-500 mb-6">Home Server / Edge</p>
-              <ul class="space-y-3 text-sm text-gray-400">
+              <h3 class="text-2xl font-black text-zinc-100 mb-2 uppercase">Sibyl-Proxy</h3>
+              <p class="text-sm text-zinc-500 mb-6 font-mono uppercase tracking-wide">Home Server / Edge</p>
+              <ul class="space-y-3 text-sm text-zinc-400 font-mono">
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-400 mt-0.5">▹</span> Golang reverse
+                  <span class="text-zinc-600 mt-0.5">></span> Golang reverse
                   proxy via
                   <code
-                    class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                    class="font-mono text-xs text-cyan-400 bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded-sm"
                     >net/http/httputil</code
                   >
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-400 mt-0.5">▹</span> Intercepts
+                  <span class="text-zinc-600 mt-0.5">></span> Intercepts
                   private routes from Nginx/Cloudflare
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-400 mt-0.5">▹</span> In-memory
+                  <span class="text-zinc-600 mt-0.5">></span> In-memory
                   caching via
                   <code
-                    class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                    class="font-mono text-xs text-cyan-400 bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded-sm"
                     >sync.Map</code
                   >
                   (300s TTL)
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-400 mt-0.5">▹</span> Strict
+                  <span class="text-zinc-600 mt-0.5">></span> Strict
                   <code
-                    class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                    class="font-mono text-xs text-cyan-400 bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded-sm"
                     >context.WithTimeout</code
                   >
                   (1500ms)
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-400 mt-0.5">▹</span> 2MB payload
+                  <span class="text-zinc-600 mt-0.5">></span> 2MB payload
                   limit via
                   <code
-                    class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                    class="font-mono text-xs text-cyan-400 bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded-sm"
                     >io.LimitReader</code
                   >
                 </li>
               </ul>
             </div>
             <!-- Brain -->
-            <div class="glass rounded-2xl p-8 gradient-border">
-              <div class="flex items-center gap-3 mb-6">
-                <div
-                  class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"
-                ></div>
-                <span class="font-mono text-sm text-emerald-400 tracking-wider"
+            <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-8">
+              <div class="flex items-center justify-between border-b border-zinc-800 pb-4 mb-6">
+                <span class="font-mono text-sm text-cyan-400 tracking-widest uppercase"
                   >COMPONENT B</span
                 >
+                <div
+                  class="w-2 h-2 bg-cyan-400"
+                ></div>
               </div>
-              <h3 class="text-2xl font-bold text-white mb-2">Sibyl-Brain</h3>
-              <p class="text-sm text-gray-500 mb-6">Google Cloud Run</p>
-              <ul class="space-y-3 text-sm text-gray-400">
+              <h3 class="text-2xl font-black text-zinc-100 mb-2 uppercase">Sibyl-Brain</h3>
+              <p class="text-sm text-zinc-500 mb-6 font-mono uppercase tracking-wide">Google Cloud Run</p>
+              <ul class="space-y-3 text-sm text-zinc-400 font-mono">
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-400 mt-0.5">▹</span> Cognitive
+                  <span class="text-zinc-600 mt-0.5">></span> Cognitive
                   reasoning engine (API Gateway)
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-400 mt-0.5">▹</span> Gemini API
+                  <span class="text-zinc-600 mt-0.5">></span> Gemini API
                   integration for intent analysis
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-400 mt-0.5">▹</span> Deterministic
+                  <span class="text-zinc-600 mt-0.5">></span> Deterministic
                   JSON response schema
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-400 mt-0.5">▹</span> Crime
+                  <span class="text-zinc-600 mt-0.5">></span> Crime
                   Coefficient scoring (0-100)
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-400 mt-0.5">▹</span> Static
+                  <span class="text-zinc-600 mt-0.5">></span> Static
                   dashboard via
                   <code
-                    class="font-mono text-xs text-cyan-300 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                    class="font-mono text-xs text-cyan-400 bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded-sm"
                     >//go:embed</code
                   >
                 </li>
@@ -578,7 +565,7 @@
       <!-- How It Works -->
       <section
         id="how-it-works"
-        class="py-32 relative"
+        class="py-32 relative border-t border-zinc-800"
         x-data="{ shown: false }"
         x-intersect.once="shown = true"
         x-intersect:enter.half="activeSection = 'how-it-works'"
@@ -592,24 +579,24 @@
           x-transition:enter-end="opacity-100 translate-y-0"
         >
           <div class="text-center mb-16">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-              Execution <span class="text-emerald-400">Pipeline</span>
+            <h2 class="text-3xl md:text-4xl font-black text-zinc-100 mb-4 uppercase tracking-tight">
+              Execution <span class="text-cyan-400">Pipeline</span>
             </h2>
           </div>
-          <div class="space-y-6" x-data="{ active: null }">
+          <div class="space-y-4" x-data="{ active: null }">
             <!-- Steps -->
             <template
               x-for="(step, i) in [
                     { phase: '01', title: 'Interception', desc: 'Nginx/Cloudflare forwards private routes to Sibyl-Proxy on your home server. Full HTTP request captured — headers, method, body.', color: 'cyan' },
                     { phase: '02', title: 'Extraction & Delegation', desc: 'Proxy extracts request parameters and POSTs the payload to Sibyl-Brain on Google Cloud Run, secured via internal API Key.', color: 'cyan' },
-                    { phase: '03', title: 'Cognitive Evaluation', desc: 'Gemini API analyzes the payload with a deterministic system prompt. SQL Injection, XSS, Path Traversal, RCE — all evaluated semantically.', color: 'emerald' },
-                    { phase: '04', title: 'Verdict & Response', desc: 'Cloud Run returns a structured JSON with Crime Coefficient score (0-100), threat status, and reasoning.', color: 'emerald' },
-                    { phase: '05', title: 'Enforce or Pass', desc: 'Score ≥ 75? Connection terminated (HTTP 403). Score < 75? Traffic forwarded to your application. The client never knows.', color: 'red' }
+                    { phase: '03', title: 'Cognitive Evaluation', desc: 'Gemini API analyzes the payload with a deterministic system prompt. SQL Injection, XSS, Path Traversal, RCE — all evaluated semantically.', color: 'cyan' },
+                    { phase: '04', title: 'Verdict & Response', desc: 'Cloud Run returns a structured JSON with Crime Coefficient score (0-100), threat status, and reasoning.', color: 'cyan' },
+                    { phase: '05', title: 'Enforce or Pass', desc: 'Score ≥ 75? Connection terminated (HTTP 403). Score < 75? Traffic forwarded to your application. The client never knows.', color: 'cyan' }
                 ]"
               :key="i"
             >
               <div
-                class="glass rounded-xl p-6 cursor-pointer gradient-border hover:bg-white/[0.02] focus:outline-none focus:ring-2 focus:ring-emerald-400 transition-colors"
+                class="bg-zinc-900 border border-zinc-800 rounded-sm p-6 cursor-pointer hover:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors"
                 role="button"
                 tabindex="0"
                 :aria-expanded="active === i"
@@ -619,16 +606,15 @@
               >
                 <div class="flex items-center gap-4">
                   <span
-                    class="font-mono text-2xl font-black"
-                    :class="step.color === 'cyan' ? 'text-cyan-400' : step.color === 'emerald' ? 'text-emerald-400' : 'text-red-400'"
+                    class="font-mono text-xl font-black text-cyan-400"
                     x-text="step.phase"
                   ></span>
                   <h3
-                    class="text-lg font-semibold text-white"
+                    class="text-lg font-bold text-zinc-100 uppercase tracking-wide"
                     x-text="step.title"
                   ></h3>
                   <svg
-                    class="w-4 h-4 text-gray-500 ml-auto transition-transform"
+                    class="w-4 h-4 text-zinc-500 ml-auto transition-transform"
                     :class="active === i && 'rotate-180'"
                     aria-hidden="true"
                     fill="none"
@@ -645,7 +631,7 @@
                 </div>
                 <div x-show="active === i" x-cloak x-collapse>
                   <p
-                    class="text-gray-400 text-sm mt-4 leading-relaxed"
+                    class="text-zinc-400 text-sm mt-4 leading-relaxed font-mono"
                     x-text="step.desc"
                   ></p>
                 </div>
@@ -657,7 +643,7 @@
 
       <!-- CTA -->
       <section
-        class="py-32 relative"
+        class="py-32 relative border-t border-zinc-800"
         x-data="{ shown: false }"
         x-intersect.once="shown = true"
       >
@@ -669,17 +655,17 @@
           x-transition:enter-start="opacity-0 scale-95"
           x-transition:enter-end="opacity-100 scale-100"
         >
-          <div class="glass rounded-3xl p-12 gradient-border glow-green">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+          <div class="bg-zinc-900 border border-zinc-800 rounded-sm p-12">
+            <h2 class="text-3xl md:text-4xl font-black text-zinc-100 mb-4 uppercase tracking-tight">
               Ready to Secure Your Server?
             </h2>
-            <p class="text-gray-400 mb-8 max-w-lg mx-auto">
+            <p class="text-zinc-400 mb-8 max-w-lg mx-auto font-mono text-sm leading-relaxed">
               Deploy Sibyl-WAF and let AI guard your infrastructure. Every
               request evaluated. Every threat neutralized.
             </p>
             <a
               href="/dashboard"
-              class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-bold rounded-xl hover:from-emerald-500 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-[#050a14] transition-all shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 text-lg"
+              class="inline-flex items-center gap-2 px-8 py-4 bg-transparent border border-cyan-400 text-cyan-400 font-mono font-bold rounded-sm hover:bg-cyan-400/10 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors text-lg uppercase tracking-wide"
             >
               Launch Dashboard
               <svg
@@ -703,14 +689,14 @@
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-white/5 py-8">
+    <footer class="border-t border-zinc-800 py-8 bg-zinc-950">
       <div
         class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4"
       >
-        <p class="text-xs text-gray-600 font-mono">
+        <p class="text-xs text-zinc-600 font-mono uppercase tracking-widest">
           © 2026 Sibyl-WAF • Cognitive Web Application Firewall
         </p>
-        <p class="text-xs text-gray-600 font-mono">
+        <p class="text-xs text-zinc-600 font-mono uppercase tracking-widest">
           #JuaraVibeCoding • Powered by Gemini API & Google Cloud Run
         </p>
       </div>
