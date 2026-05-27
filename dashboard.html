@@ -101,10 +101,14 @@
       </template>
     </div>
 
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden relative">
+      <!-- Mobile Overlay -->
+      <div x-show="mobileMenuOpen" @click="mobileMenuOpen = false" class="fixed inset-0 bg-black/50 z-30 md:hidden" x-cloak></div>
+
       <!-- Sidebar -->
       <aside
-        class="w-56 flex-shrink-0 glass border-r border-white/5 flex flex-col"
+        class="w-56 flex-shrink-0 glass border-r border-white/5 flex flex-col absolute md:relative z-40 h-full transition-transform duration-300"
+        :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
       >
         <div class="p-4 border-b border-white/5">
           <a href="/" class="flex items-center gap-2">
@@ -134,7 +138,7 @@
           <template x-for="item in nav" :key="item.label">
             <a
               href="#"
-              @click.prevent="currentTab=item.id"
+              @click.prevent="currentTab=item.id; mobileMenuOpen=false"
               class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
               :class="currentTab===item.id?'bg-emerald-500/10 text-emerald-400':'text-gray-500 hover:text-gray-300 hover:bg-white/5'"
             >
@@ -159,8 +163,11 @@
         <header
           class="h-14 flex-shrink-0 glass border-b border-white/5 flex items-center justify-between px-6"
         >
-          <div class="flex items-center gap-6">
-            <h1 class="text-sm font-semibold text-white">Dashboard</h1>
+          <div class="flex items-center gap-4">
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-gray-400 hover:text-white transition-colors">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <h1 class="text-sm font-semibold text-white hidden sm:block">Dashboard</h1>
             <div
               class="flex items-center gap-2 px-3 py-1 rounded-full"
               :class="crimeCoefficient>=75?'bg-red-500/10 border border-red-500/20':'bg-emerald-500/10 border border-emerald-500/20'"
@@ -272,20 +279,25 @@
           <!-- Threat Log -->
           <div class="glass rounded-xl overflow-hidden">
             <div
-              class="flex items-center justify-between px-4 py-3 border-b border-white/5"
+              class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-b border-white/5 gap-3"
             >
-              <div class="flex items-center gap-2">
-                <div
-                  class="w-2 h-2 rounded-full bg-red-400 animate-pulse"
-                ></div>
-                <h2 class="text-sm font-semibold text-white">
-                  Live Threat Log
-                </h2>
+              <div class="flex items-center justify-between w-full sm:w-auto">
+                <div class="flex items-center gap-2">
+                  <div class="w-2 h-2 rounded-full bg-red-400 animate-pulse"></div>
+                  <h2 class="text-sm font-semibold text-white">Live Threat Log</h2>
+                </div>
+                <span class="text-[10px] font-mono text-gray-600 sm:hidden" x-text="filteredLogs.length+' entries'"></span>
               </div>
-              <span
-                class="text-[10px] font-mono text-gray-600"
-                x-text="logs.length+' entries'"
-              ></span>
+              
+              <div class="flex-1 flex items-center justify-end gap-3 w-full sm:w-auto">
+                <input type="text" x-model="searchQuery" placeholder="Search IP, path, or reason..." class="w-full sm:max-w-[200px] px-3 py-1.5 rounded-lg bg-gray-900/80 border border-white/10 text-[10px] font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                <select x-model="statusFilter" class="px-2 py-1.5 rounded-lg bg-gray-900/80 border border-white/10 text-[10px] font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors appearance-none cursor-pointer">
+                  <option value="ALL">All Status</option>
+                  <option value="BLOCKED">Blocked</option>
+                  <option value="PASSED">Passed</option>
+                </select>
+                <span class="text-[10px] font-mono text-gray-600 hidden sm:block whitespace-nowrap" x-text="filteredLogs.length+' entries'"></span>
+              </div>
             </div>
             <div class="overflow-y-auto log-scroll" style="max-height: 320px">
               <table class="w-full text-xs font-mono">
@@ -301,7 +313,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <template x-for="(log,i) in logs" :key="i">
+                  <template x-for="(log,i) in filteredLogs" :key="i">
                     <tr
                       class="border-t border-white/[.03] hover:bg-white/[.02] transition-colors"
                       x-show="log.visible"
@@ -399,9 +411,15 @@
 
             <!-- Recent Blocked -->
             <div class="glass rounded-xl overflow-hidden">
-              <div class="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                <h3 class="text-sm font-semibold text-white">Recent Blocked Requests</h3>
-                <span class="text-[10px] font-mono text-gray-600">Last 24 hours</span>
+              <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-b border-white/5 gap-3">
+                <div class="flex items-center justify-between w-full sm:w-auto">
+                  <h3 class="text-sm font-semibold text-white">Recent Blocked Requests</h3>
+                  <span class="text-[10px] font-mono text-gray-600 sm:hidden">Last 24 hours</span>
+                </div>
+                <div class="flex-1 flex items-center justify-end gap-3 w-full sm:w-auto">
+                  <input type="text" x-model="threatSearchQuery" placeholder="Search IP, vector, payload..." class="w-full sm:max-w-[250px] px-3 py-1.5 rounded-lg bg-gray-900/80 border border-white/10 text-[10px] font-mono text-white focus:border-emerald-500/50 focus:outline-none transition-colors">
+                  <span class="text-[10px] font-mono text-gray-600 hidden sm:block whitespace-nowrap" x-text="filteredThreats.length+' results'"></span>
+                </div>
               </div>
               <div class="overflow-y-auto log-scroll" style="max-height:360px">
                 <table class="w-full text-xs font-mono">
@@ -409,7 +427,7 @@
                     <tr class="text-gray-600 text-left"><th class="px-4 py-2 font-medium">TIME</th><th class="px-4 py-2 font-medium">SOURCE IP</th><th class="px-4 py-2 font-medium">VECTOR</th><th class="px-4 py-2 font-medium">TARGET</th><th class="px-4 py-2 font-medium">SCORE</th><th class="px-4 py-2 font-medium">PAYLOAD SNIPPET</th></tr>
                   </thead>
                   <tbody>
-                    <template x-for="(b,i) in blockedRequests" :key="i">
+                    <template x-for="(b,i) in filteredThreats" :key="i">
                       <tr class="border-t border-white/[.03] hover:bg-white/[.02] transition-colors">
                         <td class="px-4 py-2 text-gray-500" x-text="b.time"></td>
                         <td class="px-4 py-2 text-cyan-400" x-text="b.ip"></td>
@@ -585,6 +603,10 @@
     <script>
       function dashboardApp() {
         return {
+          mobileMenuOpen: false,
+          searchQuery: '',
+          statusFilter: 'ALL',
+          threatSearchQuery: '',
           currentTab: "overview",
           chartPeriod: "6H",
           crimeCoefficient: 42,
@@ -658,6 +680,18 @@
             {time:'00:13:22',ip:'23.129.64.210',vector:'Path Traversal',target:'/api/config',score:82,payload:'..\\..\\..\\windows\\system32\\config\\sam'},
             {time:'00:09:51',ip:'91.219.236.18',vector:'SQLi',target:'/api/login',score:93,payload:"admin'; DROP TABLE users;--"}
           ],
+          get filteredLogs() {
+            return this.logs.filter(l => {
+              const matchSearch = l.ip.includes(this.searchQuery) || l.path.toLowerCase().includes(this.searchQuery.toLowerCase()) || l.reason.toLowerCase().includes(this.searchQuery.toLowerCase());
+              const matchStatus = this.statusFilter === 'ALL' || l.status === this.statusFilter;
+              return matchSearch && matchStatus;
+            });
+          },
+          get filteredThreats() {
+            return this.blockedRequests.filter(b => {
+              return b.ip.includes(this.threatSearchQuery) || b.vector.toLowerCase().includes(this.threatSearchQuery.toLowerCase()) || b.payload.toLowerCase().includes(this.threatSearchQuery.toLowerCase());
+            });
+          },
           init() {
             this.updateTime();
             setInterval(() => this.updateTime(), 1000);
