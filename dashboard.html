@@ -806,9 +806,38 @@
             if (this.exportStatus !== 'idle') return;
             this.exportStatus = 'exporting';
             setTimeout(() => {
+              // Generate CSV content from current logs
+              const headers = ['Time', 'IP Address', 'Method', 'Path', 'Score', 'Status', 'Reason'];
+              const csvRows = [headers.join(',')];
+              
+              this.logs.forEach(log => {
+                const row = [
+                  log.time,
+                  log.ip,
+                  log.method,
+                  log.path,
+                  log.score,
+                  log.status,
+                  `"${log.reason.replace(/"/g, '""')}"`
+                ];
+                csvRows.push(row.join(','));
+              });
+              
+              const csvString = csvRows.join('\n');
+              const blob = new Blob([csvString], { type: 'text/csv' });
+              const url = window.URL.createObjectURL(blob);
+              
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `sibyl-waf-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              window.URL.revokeObjectURL(url);
+              
               this.exportStatus = 'done';
               setTimeout(() => this.exportStatus = 'idle', 2000);
-            }, 1000);
+            }, 800);
           },
           init() {
             this.updateTime();
