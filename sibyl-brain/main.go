@@ -23,6 +23,10 @@ func main() {
 		port = "8080"
 	}
 
+	// Inisialisasi koneksi Gemini API. Fail-fast jika GEMINI_API_KEY kosong.
+	cleanupGemini := InitGeminiClient()
+	defer cleanupGemini()
+
 	r := chi.NewRouter()
 
 	// Middleware standar — logging request dan recovery dari panic.
