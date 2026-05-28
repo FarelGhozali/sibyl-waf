@@ -22,3 +22,4 @@ go.work
 
 # Compiled binaries
 sibyl-brain/sibyl-brain
+sibyl-proxy/sibyl-proxy
