@@ -428,7 +428,7 @@ function dashboardApp() {
           initResponseChart() {
             const ctx = document.getElementById('responseChart');
             if (!ctx) return;
-            new Chart(ctx, { type: 'bar', data: { labels: ['<20ms','20-50ms','50-100ms','100-200ms','200-500ms','500ms+'], datasets: [{ label: 'Request Count', data: [1240,3860,4120,2340,890,120], backgroundColor: ['#10b981','#10b981','#06b6d4','#f59e0b','#ef4444','#ef4444'], borderWidth: 0, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,.03)' }, ticks: { color: '#4b5563', font: { size: 10, family: 'Fira Code' } } }, y: { grid: { color: 'rgba(255,255,255,.03)' }, ticks: { color: '#4b5563', font: { size: 10, family: 'Fira Code' } } } } } });
+            new Chart(ctx, { type: 'bar', data: { labels: ['<20ms','20-50ms','50-100ms','100-200ms','200-500ms','500ms+'], datasets: [{ label: 'Request Count', data: [1240,3860,4120,2340,890,120], backgroundColor: ['#06b6d4','#06b6d4','#06b6d4','#f59e0b','#ef4444','#ef4444'], borderWidth: 0, borderRadius: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,.03)' }, ticks: { color: '#4b5563', font: { size: 10, family: 'Fira Code' } } }, y: { grid: { color: 'rgba(255,255,255,.03)' }, ticks: { color: '#4b5563', font: { size: 10, family: 'Fira Code' } } } } } });
           },
           initHourlyChart() {
             const ctx = document.getElementById('hourlyChart');
