@@ -58,21 +58,21 @@
     </script>
     <link rel="stylesheet" href="css/index.css" />
   </head>
-  <body
+  <body id="top"
     class="font-sans text-zinc-100 bg-zinc-950 antialiased overflow-x-hidden grid-bg"
-    x-data="{ shown: false }"
+    x-data="{ shown: false, activeSection: 'home' }"
     x-init="setTimeout(() => shown = true, 100)"
   >
     <!-- Nav -->
     <nav class="fixed top-0 w-full z-50 bg-zinc-950 border-b border-zinc-800">
       <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <a href="/" class="flex items-center gap-3 group focus:outline-none focus:ring-1 focus:ring-cyan-400 rounded-sm">
+        <a href="#top" class="flex items-center gap-3 group focus:outline-none focus:ring-1 focus:ring-cyan-400 rounded-sm">
           <span class="text-zinc-100 font-mono font-bold text-lg tracking-tight">Sibyl<span class="text-cyan-400">-WAF</span></span>
         </a>
         <div class="hidden md:flex items-center gap-8">
-          <a href="#problem-solution" class="text-sm font-mono text-zinc-400 hover:text-cyan-400 transition-colors">The Problem</a>
-          <a href="#architecture" class="text-sm font-mono text-zinc-400 hover:text-cyan-400 transition-colors">Architecture</a>
-          <a href="#engineering-flex" class="text-sm font-mono text-zinc-400 hover:text-cyan-400 transition-colors">Engineering Flex</a>
+          <a href="#problem-solution" :class="activeSection === 'problem-solution' ? 'text-cyan-400 font-semibold' : 'text-zinc-400'" class="text-sm font-mono hover:text-cyan-400 transition-colors">The Problem</a>
+          <a href="#architecture" :class="activeSection === 'architecture' ? 'text-cyan-400 font-semibold' : 'text-zinc-400'" class="text-sm font-mono hover:text-cyan-400 transition-colors">Architecture</a>
+          <a href="#engineering-flex" :class="activeSection === 'engineering-flex' ? 'text-cyan-400 font-semibold' : 'text-zinc-400'" class="text-sm font-mono hover:text-cyan-400 transition-colors">Engineering Flex</a>
           <a href="/dashboard" class="px-4 py-2 text-sm font-mono font-bold text-cyan-400 bg-transparent border border-cyan-400 rounded-sm hover:bg-cyan-400/10 transition-colors">Initialize Dominator</a>
         </div>
       </div>
@@ -80,7 +80,7 @@
 
     <main>
       <!-- 1. HERO SECTION -->
-      <section class="relative min-h-screen flex items-center justify-center pt-16" x-intersect.half="shown = true">
+      <section id="home" class="relative min-h-screen flex items-center justify-center pt-16" x-intersect.half="shown = true; activeSection = 'home'">
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
           <div class="scanline animate-scan opacity-20"></div>
         </div>
@@ -108,7 +108,7 @@
       </section>
 
       <!-- 2. THE PROBLEM VS THE SOLUTION -->
-      <section id="problem-solution" class="py-32 relative border-t border-zinc-800" x-data="{ sectionShown: false }" x-intersect.once="sectionShown = true">
+      <section id="problem-solution" class="py-32 relative border-t border-zinc-800" x-data="{ sectionShown: false }" x-intersect.once="sectionShown = true" x-intersect.half="activeSection = 'problem-solution'">
         <div class="max-w-6xl mx-auto px-6" x-show="sectionShown" x-transition:enter="transition ease-out duration-1000" x-transition:enter-start="opacity-0 translate-y-12" x-transition:enter-end="opacity-100 translate-y-0">
           <h2 class="text-3xl md:text-4xl font-black text-zinc-100 mb-12 uppercase tracking-tight text-center">
             The Problem <span class="text-zinc-600">vs</span> <span class="text-cyan-400">The Solution</span>
@@ -156,7 +156,7 @@
       </section>
 
       <!-- 3. ARCHITECTURE OVERVIEW -->
-      <section id="architecture" class="py-32 relative border-t border-zinc-800" x-data="{ sectionShown: false }" x-intersect.once="sectionShown = true">
+      <section id="architecture" class="py-32 relative border-t border-zinc-800" x-data="{ sectionShown: false }" x-intersect.once="sectionShown = true" x-intersect.half="activeSection = 'architecture'">
         <div class="max-w-6xl mx-auto px-6" x-show="sectionShown" x-transition:enter="transition ease-out duration-1000" x-transition:enter-start="opacity-0 translate-y-12" x-transition:enter-end="opacity-100 translate-y-0">
           <div class="text-center mb-16">
             <h2 class="text-3xl md:text-4xl font-black text-zinc-100 mb-4 uppercase tracking-tight">
@@ -190,7 +190,7 @@
       </section>
 
       <!-- 4. ENGINEERING FLEX -->
-      <section id="engineering-flex" class="py-32 relative border-t border-zinc-800" x-data="{ sectionShown: false }" x-intersect.once="sectionShown = true">
+      <section id="engineering-flex" class="py-32 relative border-t border-zinc-800" x-data="{ sectionShown: false }" x-intersect.once="sectionShown = true" x-intersect.half="activeSection = 'engineering-flex'">
         <div class="max-w-7xl mx-auto px-6" x-show="sectionShown" x-transition:enter="transition ease-out duration-1000" x-transition:enter-start="opacity-0 translate-y-12" x-transition:enter-end="opacity-100 translate-y-0">
           <h2 class="text-3xl md:text-4xl font-black text-zinc-100 mb-16 uppercase tracking-tight text-center">
             Engineering <span class="text-cyan-400">Flex</span>
@@ -224,12 +224,9 @@
 
     <!-- Footer -->
     <footer class="border-t border-zinc-800 py-8 bg-zinc-950">
-      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <p class="text-xs text-zinc-600 font-mono uppercase tracking-widest">
+      <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-center gap-4">
+        <p class="text-xs text-zinc-600 font-mono uppercase tracking-widest text-center">
           © 2026 Sibyl-WAF • Cognitive Web Application Firewall
-        </p>
-        <p class="text-xs text-zinc-600 font-mono uppercase tracking-widest">
-          #JuaraVibeCoding • Powered by Gemini API
         </p>
       </div>
     </footer>
