@@ -27,6 +27,10 @@ func main() {
 	cleanupGemini := InitGeminiClient()
 	defer cleanupGemini()
 
+	// Inisialisasi Valkey dan injeksi Seed Data jika kosong
+	InitValkeyClient()
+	SeedMockData()
+
 	r := chi.NewRouter()
 
 	// Middleware standar — logging request dan recovery dari panic.
@@ -36,6 +40,7 @@ func main() {
 	// --- API Endpoints (Kontrak Data TDD §1.4) ---
 	r.Post("/api/v1/eval", HandlePayloadEvaluation)
 	r.Get("/api/v1/blacklist", HandleBlacklistDistribution)
+	r.Get("/api/v1/stats", HandleStats)
 
 	// --- UI Routes (Presentasi Juri) ---
 	// TODO: Implementasi handler ServeLandingPage dan ServeDashboard

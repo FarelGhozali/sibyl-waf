@@ -783,15 +783,15 @@
         init() {
           this.updateTime();
           setInterval(() => this.updateTime(), 1000);
+          
+          this.fetchStats();
+          setInterval(() => this.fetchStats(), 5000);
+
           setTimeout(() => {
-            this.isLoading = false;
-            this.generateLogs();
             this.initTrafficChart();
             this.initThreatChart();
-          }, 1500);
-          setInterval(() => {
-            if (!this.isPaused && !this.isLoading) this.addLog();
-          }, 4000);
+          }, 500);
+
           this.$watch('currentTab', (val) => {
             localStorage.setItem('sibyl_tab', val);
             if (val === 'analytics' && !this.analyticsChartsInit) {
@@ -799,6 +799,46 @@
               setTimeout(() => { this.initResponseChart(); this.initHourlyChart(); }, 300);
             }
           });
+        },
+        async fetchStats() {
+          if (this.isPaused) return;
+          try {
+            const res = await fetch('/api/v1/stats');
+            if (!res.ok) return;
+            const data = await res.json();
+            
+            this.stats[0].value = data.total_analyzed ? data.total_analyzed.toLocaleString() : '0';
+            this.stats[1].value = data.total_blocked ? data.total_blocked.toLocaleString() : '0';
+            
+            if (data.recent_logs && data.recent_logs.length > 0) {
+              this.logs = data.recent_logs.map(l => ({
+                time: l.timestamp,
+                ip: l.ip,
+                method: l.method || 'N/A',
+                path: l.path || 'N/A',
+                score: l.crime_coefficient,
+                status: l.status || (l.crime_coefficient >= 75 ? 'BAHAYA' : 'AMAN'),
+                reason: l.reason,
+                visible: true
+              }));
+              
+              this.blockedRequests = this.logs.filter(l => l.score >= 75).map(l => ({
+                time: l.time,
+                ip: l.ip,
+                vector: l.reason.split(' ')[0] || 'Unknown',
+                target: l.path,
+                score: l.score,
+                payload: l.reason
+              }));
+              
+              if (this.logs.length > 0) {
+                this.crimeCoefficient = this.logs[0].score;
+              }
+            }
+            this.isLoading = false;
+          } catch (err) {
+            console.error('[Dashboard] Fetch stats error:', err);
+          }
         },
         updateTime() {
           const d = new Date();

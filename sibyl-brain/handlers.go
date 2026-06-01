@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/generative-ai-go/genai"
+	"github.com/valkey-io/valkey-go"
 	"google.golang.org/api/option"
 )
 
@@ -72,6 +73,51 @@ func InitGeminiClient() func() {
 	return func() {
 		if err := geminiClient.Close(); err != nil {
 			log.Printf("[WARN] Gagal menutup Gemini client: %v", err)
+		}
+	}
+}
+
+// ========================================================================
+// VALKEY CLIENT — Inisialisasi
+// ========================================================================
+
+var valkeyClient valkey.Client
+
+// InitValkeyClient menginisialisasi koneksi ke Valkey.
+// Jika gagal, log error dan lanjutkan tanpa panic (degraded mode).
+func InitValkeyClient() {
+	client, err := valkey.NewClient(valkey.ClientOption{InitAddress: []string{"127.0.0.1:6379"}})
+	if err != nil {
+		log.Printf("[WARN] Gagal koneksi ke Valkey: %v. Menjalankan mode in-memory (degraded).", err)
+	} else {
+		valkeyClient = client
+		log.Println("[INIT] Valkey client berhasil diinisialisasi.")
+	}
+}
+
+// SeedMockData menyuntikkan data log fiktif jika Valkey kosong.
+func SeedMockData() {
+	if valkeyClient == nil {
+		return
+	}
+	ctx := context.Background()
+	exists, _ := valkeyClient.Do(ctx, valkeyClient.B().Exists().Key("metric:total_analyzed").Build()).AsInt64()
+	if exists == 0 {
+		log.Println("[INIT] Valkey kosong, menyuntikkan Seed Data fiktif...")
+		valkeyClient.Do(ctx, valkeyClient.B().Set().Key("metric:total_analyzed").Value("5").Build())
+		valkeyClient.Do(ctx, valkeyClient.B().Set().Key("metric:total_blocked").Value("2").Build())
+
+		mockLogs := []map[string]any{
+			{"timestamp": time.Now().Format("15:04:05"), "ip": "192.168.1.10", "method": "POST", "path": "/api/login", "crime_coefficient": 95, "status": "BAHAYA", "reason": "SQL Injection detected in password field"},
+			{"timestamp": time.Now().Add(-1 * time.Minute).Format("15:04:05"), "ip": "10.0.0.5", "method": "GET", "path": "/api/search", "crime_coefficient": 88, "status": "BAHAYA", "reason": "XSS payload in query parameter"},
+			{"timestamp": time.Now().Add(-2 * time.Minute).Format("15:04:05"), "ip": "172.16.0.2", "method": "GET", "path": "/api/health", "crime_coefficient": 10, "status": "AMAN", "reason": "Health check endpoint"},
+			{"timestamp": time.Now().Add(-3 * time.Minute).Format("15:04:05"), "ip": "45.33.32.156", "method": "POST", "path": "/api/upload", "crime_coefficient": 5, "status": "AMAN", "reason": "Normal file upload"},
+			{"timestamp": time.Now().Add(-4 * time.Minute).Format("15:04:05"), "ip": "104.248.1.1", "method": "GET", "path": "/wp-admin", "crime_coefficient": 20, "status": "AMAN", "reason": "Admin access attempt"},
+		}
+
+		for _, l := range mockLogs {
+			b, _ := json.Marshal(l)
+			valkeyClient.Do(ctx, valkeyClient.B().Rpush().Key("recent_logs").Element(string(b)).Build())
 		}
 	}
 }
@@ -151,8 +197,33 @@ func HandlePayloadEvaluation(w http.ResponseWriter, r *http.Request) {
 	if evalResp.CrimeCoefficient >= 75 {
 		globalBlacklist.Store(req.ClientIP, true)
 		log.Printf("[EVAL] BLOKIR → IP=%s CC=%d Reason=%s", req.ClientIP, evalResp.CrimeCoefficient, evalResp.Reason)
+
+		if valkeyClient != nil {
+			ctxBg := context.Background()
+			_ = valkeyClient.Do(ctxBg, valkeyClient.B().Set().Key("banned_ip:"+req.ClientIP).Value("1").ExSeconds(86400).Build()).Error()
+			_ = valkeyClient.Do(ctxBg, valkeyClient.B().Incr().Key("metric:total_blocked").Build()).Error()
+		}
 	} else {
 		log.Printf("[EVAL] AMAN  → IP=%s CC=%d", req.ClientIP, evalResp.CrimeCoefficient)
+	}
+
+	// Simpan statistik global ke Valkey
+	if valkeyClient != nil {
+		ctxBg := context.Background()
+		_ = valkeyClient.Do(ctxBg, valkeyClient.B().Incr().Key("metric:total_analyzed").Build()).Error()
+
+		logEntry := map[string]any{
+			"timestamp":         time.Now().Format("15:04:05"),
+			"ip":                req.ClientIP,
+			"method":            req.Method,
+			"path":              req.Path,
+			"crime_coefficient": evalResp.CrimeCoefficient,
+			"status":            evalResp.Status,
+			"reason":            evalResp.Reason,
+		}
+		logBytes, _ := json.Marshal(logEntry)
+		_ = valkeyClient.Do(ctxBg, valkeyClient.B().Lpush().Key("recent_logs").Element(string(logBytes)).Build()).Error()
+		_ = valkeyClient.Do(ctxBg, valkeyClient.B().Ltrim().Key("recent_logs").Start(0).Stop(49).Build()).Error()
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
@@ -285,3 +356,46 @@ func HandleBlacklistDistribution(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ========================================================================
+// HANDLER: GET /api/v1/stats
+// ========================================================================
+
+// HandleStats mengembalikan data statistik untuk dashboard.
+func HandleStats(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	stats := map[string]any{
+		"total_analyzed": 0,
+		"total_blocked":  0,
+		"recent_logs":    []map[string]any{},
+	}
+
+	if valkeyClient != nil {
+		ctx := context.Background()
+
+		analyzedResp := valkeyClient.Do(ctx, valkeyClient.B().Get().Key("metric:total_analyzed").Build())
+		if analyzed, err := analyzedResp.AsInt64(); err == nil {
+			stats["total_analyzed"] = analyzed
+		}
+
+		blockedResp := valkeyClient.Do(ctx, valkeyClient.B().Get().Key("metric:total_blocked").Build())
+		if blocked, err := blockedResp.AsInt64(); err == nil {
+			stats["total_blocked"] = blocked
+		}
+
+		logsResp := valkeyClient.Do(ctx, valkeyClient.B().Lrange().Key("recent_logs").Start(0).Stop(49).Build())
+		if logsStrs, err := logsResp.AsStrSlice(); err == nil {
+			var logs []map[string]any
+			for _, ls := range logsStrs {
+				var tl map[string]any
+				if err := json.Unmarshal([]byte(ls), &tl); err == nil {
+					logs = append(logs, tl)
+				}
+			}
+			stats["recent_logs"] = logs
+		}
+	}
+
+	json.NewEncoder(w).Encode(stats)
+}
