@@ -1,0 +1,5 @@
+sibyl-brain
+sibyl-proxy
+*.md
+.git
+.gitignore

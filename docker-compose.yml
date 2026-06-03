@@ -1,0 +1,77 @@
+services:
+  # ================================================================
+  # VALKEY — In-Memory Data Store (Redis-compatible, open-source)
+  # ================================================================
+  valkey:
+    image: valkey/valkey:latest
+    container_name: sibyl-valkey
+    ports:
+      - "6379:6379"
+    networks:
+      - sibyl-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ================================================================
+  # SIBYL-BRAIN — Mesin Kognitif (Gemini API Gateway)
+  # ================================================================
+  sibyl-brain:
+    build:
+      context: ./sibyl-brain
+      dockerfile: Dockerfile
+    container_name: sibyl-brain
+    ports:
+      - "8080:8080"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - VALKEY_URL=valkey:6379
+      - PORT=8080
+    depends_on:
+      valkey:
+        condition: service_healthy
+    networks:
+      - sibyl-net
+    restart: unless-stopped
+
+  # ================================================================
+  # SIBYL-PROXY — Agen Penindak (Reverse Proxy Layer 1)
+  # ================================================================
+  sibyl-proxy:
+    build:
+      context: ./sibyl-proxy
+      dockerfile: Dockerfile
+    container_name: sibyl-proxy
+    ports:
+      - "4000:4000"
+    environment:
+      - SIBYL_BRAIN_URL=http://sibyl-brain:8080
+      - TARGET_APP_URL=http://juice-shop:3000
+    depends_on:
+      - sibyl-brain
+    networks:
+      - sibyl-net
+    restart: unless-stopped
+
+  # ================================================================
+  # JUICE SHOP — Target Aplikasi Rentan (Lab Pengujian)
+  # ================================================================
+  juice-shop:
+    image: bkimminich/juice-shop:latest
+    container_name: sibyl-juiceshop
+    ports:
+      - "3000:3000"
+    networks:
+      - sibyl-net
+    restart: unless-stopped
+
+# ================================================================
+# NETWORK — Internal DNS resolution antar container
+# ================================================================
+networks:
+  sibyl-net:
+    driver: bridge
+    name: sibyl-network

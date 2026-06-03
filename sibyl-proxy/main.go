@@ -22,12 +22,11 @@ import (
 
 const (
 	proxyListenAddr = ":4000"
-	targetAppAddr   = "http://localhost:3000"
-	cacheTTL        = 300 * time.Second  // 5 menit — masa berlaku cache IP aman.
-	evalTimeout     = 1500 * time.Millisecond // Batas waktu evaluasi kognitif (TDD §1.3).
-	syncInterval    = 15 * time.Second   // Interval polling blacklist dari Cloud Run (Opsi B).
-	maxBodySize     = 2 * 1024 * 1024    // 2MB — proteksi heap (TDD §1.3).
-	ccThreshold     = 75                 // Crime Coefficient >= 75 = BLOKIR.
+	cacheTTL        = 300 * time.Second       // 5 menit — masa berlaku cache IP aman.
+	evalTimeout     = 1500 * time.Millisecond  // Batas waktu evaluasi kognitif (TDD §1.3).
+	syncInterval    = 15 * time.Second         // Interval polling blacklist dari Cloud Run (Opsi B).
+	maxBodySize     = 2 * 1024 * 1024          // 2MB — proteksi heap (TDD §1.3).
+	ccThreshold     = 75                       // Crime Coefficient >= 75 = BLOKIR.
 )
 
 // ========================================================================
@@ -74,6 +73,11 @@ var brainBaseURL string
 // ========================================================================
 
 func main() {
+	targetAppAddr := os.Getenv("TARGET_APP_URL")
+	if targetAppAddr == "" {
+		targetAppAddr = "http://localhost:3000"
+	}
+
 	brainBaseURL = os.Getenv("SIBYL_BRAIN_URL")
 	if brainBaseURL == "" {
 		brainBaseURL = "http://localhost:8080"
