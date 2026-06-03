@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"sync"
@@ -58,21 +58,23 @@ var geminiClient *genai.Client
 func InitGeminiClient() func() {
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
-		log.Fatal("[FATAL] GEMINI_API_KEY tidak di-set. Abort.")
+		slog.Error("GEMINI_API_KEY tidak di-set, abort")
+		os.Exit(1)
 	}
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
-		log.Fatalf("[FATAL] Gagal inisialisasi Gemini client: %v", err)
+		slog.Error("gagal inisialisasi Gemini client", "error", err)
+		os.Exit(1)
 	}
 
 	geminiClient = client
-	log.Println("[INIT] Gemini client berhasil diinisialisasi.")
+	slog.Info("Gemini client berhasil diinisialisasi")
 
 	return func() {
 		if err := geminiClient.Close(); err != nil {
-			log.Printf("[WARN] Gagal menutup Gemini client: %v", err)
+			slog.Warn("gagal menutup Gemini client", "error", err)
 		}
 	}
 }
@@ -86,12 +88,16 @@ var valkeyClient valkey.Client
 // InitValkeyClient menginisialisasi koneksi ke Valkey.
 // Jika gagal, log error dan lanjutkan tanpa panic (degraded mode).
 func InitValkeyClient() {
-	client, err := valkey.NewClient(valkey.ClientOption{InitAddress: []string{"127.0.0.1:6379"}})
+	valkeyAddr := os.Getenv("VALKEY_URL")
+	if valkeyAddr == "" {
+		valkeyAddr = "127.0.0.1:6379"
+	}
+	client, err := valkey.NewClient(valkey.ClientOption{InitAddress: []string{valkeyAddr}})
 	if err != nil {
-		log.Printf("[WARN] Gagal koneksi ke Valkey: %v. Menjalankan mode in-memory (degraded).", err)
+		slog.Warn("gagal koneksi ke Valkey, mode degraded", "error", err, "addr", valkeyAddr)
 	} else {
 		valkeyClient = client
-		log.Println("[INIT] Valkey client berhasil diinisialisasi.")
+		slog.Info("Valkey client berhasil diinisialisasi", "addr", valkeyAddr)
 	}
 }
 
@@ -103,7 +109,7 @@ func SeedMockData() {
 	ctx := context.Background()
 	exists, _ := valkeyClient.Do(ctx, valkeyClient.B().Exists().Key("metric:total_analyzed").Build()).AsInt64()
 	if exists == 0 {
-		log.Println("[INIT] Valkey kosong, menyuntikkan Seed Data fiktif...")
+		slog.Info("Valkey kosong, menyuntikkan Seed Data fiktif")
 		valkeyClient.Do(ctx, valkeyClient.B().Set().Key("metric:total_analyzed").Value("5").Build())
 		valkeyClient.Do(ctx, valkeyClient.B().Set().Key("metric:total_blocked").Value("2").Build())
 
@@ -157,7 +163,7 @@ func HandlePayloadEvaluation(w http.ResponseWriter, r *http.Request) {
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("[EVAL] Gagal baca body: %v", err)
+		slog.Warn("gagal baca body", "error", err)
 		http.Error(w, `{"error":"payload terlalu besar atau tidak valid"}`, http.StatusRequestEntityTooLarge)
 		return
 	}
@@ -165,7 +171,7 @@ func HandlePayloadEvaluation(w http.ResponseWriter, r *http.Request) {
 
 	var req EvalRequest
 	if err := json.Unmarshal(body, &req); err != nil {
-		log.Printf("[EVAL] JSON decode error: %v", err)
+		slog.Warn("JSON decode error", "error", err)
 		http.Error(w, `{"error":"format JSON tidak valid"}`, http.StatusBadRequest)
 		return
 	}
@@ -176,12 +182,28 @@ func HandlePayloadEvaluation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("[EVAL] Incoming → IP=%s Method=%s Path=%s", req.ClientIP, req.Method, req.Path)
+	// Prometheus: catat request masuk.
+	metricRequestsTotal.Inc()
 
-	// --- DELEGASI KE GEMINI API ---
+	slog.Info("eval incoming",
+		"client_ip", req.ClientIP,
+		"method", req.Method,
+		"path", req.Path,
+	)
+
+	// --- DELEGASI KE GEMINI API (dengan pengukuran latensi) ---
+	evalStart := time.Now()
 	evalResp, err := evaluateWithGemini(req)
+	evalDuration := time.Since(evalStart).Seconds()
+	metricEvalLatency.Observe(evalDuration)
+
 	if err != nil {
-		log.Printf("[EVAL] Gemini error: %v", err)
+		slog.Error("gemini eval gagal",
+			"client_ip", req.ClientIP,
+			"path", req.Path,
+			"latency_s", evalDuration,
+			"error", err,
+		)
 		// Fail-Closed: jika AI gagal, tolak request demi keamanan (TDD §1.3).
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusServiceUnavailable)
@@ -196,7 +218,15 @@ func HandlePayloadEvaluation(w http.ResponseWriter, r *http.Request) {
 	// Jika Crime Coefficient >= 75, masukkan IP ke global blacklist.
 	if evalResp.CrimeCoefficient >= 75 {
 		globalBlacklist.Store(req.ClientIP, true)
-		log.Printf("[EVAL] BLOKIR → IP=%s CC=%d Reason=%s", req.ClientIP, evalResp.CrimeCoefficient, evalResp.Reason)
+		metricBlocksTotal.Inc()
+
+		slog.Warn("BLOKIR",
+			"client_ip", req.ClientIP,
+			"path", req.Path,
+			"crime_coefficient", evalResp.CrimeCoefficient,
+			"reason", evalResp.Reason,
+			"latency_s", evalDuration,
+		)
 
 		if valkeyClient != nil {
 			ctxBg := context.Background()
@@ -204,7 +234,11 @@ func HandlePayloadEvaluation(w http.ResponseWriter, r *http.Request) {
 			_ = valkeyClient.Do(ctxBg, valkeyClient.B().Incr().Key("metric:total_blocked").Build()).Error()
 		}
 	} else {
-		log.Printf("[EVAL] AMAN  → IP=%s CC=%d", req.ClientIP, evalResp.CrimeCoefficient)
+		slog.Info("AMAN",
+			"client_ip", req.ClientIP,
+			"crime_coefficient", evalResp.CrimeCoefficient,
+			"latency_s", evalDuration,
+		)
 	}
 
 	// Simpan statistik global ke Valkey
@@ -230,7 +264,7 @@ func HandlePayloadEvaluation(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(w).Encode(evalResp); err != nil {
-		log.Printf("[EVAL] Gagal encode response: %v", err)
+		slog.Error("gagal encode eval response", "error", err)
 	}
 }
 
@@ -352,7 +386,7 @@ func HandleBlacklistDistribution(w http.ResponseWriter, r *http.Request) {
 		"banned_ips": bannedIPs,
 		"count":      len(bannedIPs),
 	}); err != nil {
-		log.Printf("[BLACKLIST] Gagal encode response: %v", err)
+		slog.Error("gagal encode blacklist response", "error", err)
 	}
 }
 

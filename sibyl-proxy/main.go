@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -14,6 +14,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // ========================================================================
@@ -28,6 +31,27 @@ const (
 	maxBodySize     = 2 * 1024 * 1024          // 2MB — proteksi heap (TDD §1.3).
 	ccThreshold     = 75                       // Crime Coefficient >= 75 = BLOKIR.
 )
+
+// ========================================================================
+// PROMETHEUS METRICS
+// ========================================================================
+
+var (
+	proxyRequestsTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "proxy_requests_total",
+		Help: "Total request yang diproses oleh Sibyl-Proxy.",
+	}, []string{"decision"})
+	proxyEvalLatency = prometheus.NewHistogram(prometheus.HistogramOpts{
+		Name:    "proxy_eval_latency_seconds",
+		Help:    "Latensi round-trip evaluasi payload ke Sibyl-Brain.",
+		Buckets: []float64{0.05, 0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0},
+	})
+)
+
+func init() {
+	prometheus.MustRegister(proxyRequestsTotal)
+	prometheus.MustRegister(proxyEvalLatency)
+}
 
 // ========================================================================
 // KONTRAK DATA — Harus identik dengan Sibyl-Brain
@@ -73,6 +97,12 @@ var brainBaseURL string
 // ========================================================================
 
 func main() {
+	// Setup structured logging — JSON ke stdout.
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+	slog.SetDefault(logger)
+
 	targetAppAddr := os.Getenv("TARGET_APP_URL")
 	if targetAppAddr == "" {
 		targetAppAddr = "http://localhost:3000"
@@ -85,14 +115,15 @@ func main() {
 
 	targetURL, err := url.Parse(targetAppAddr)
 	if err != nil {
-		log.Fatalf("[FATAL] URL target tidak valid: %v", err)
+		slog.Error("URL target tidak valid", "error", err)
+		os.Exit(1)
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
 
 	// Override ErrorHandler agar proxy tidak panic saat target mati.
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
-		log.Printf("[PROXY] Target unreachable: %v", err)
+		slog.Error("target unreachable", "error", err)
 		http.Error(w, `{"error":"target application tidak merespons"}`, http.StatusBadGateway)
 	}
 
@@ -103,13 +134,23 @@ func main() {
 	go startCacheEvictionLoop()
 
 	mux := http.NewServeMux()
+
+	// /metrics WAJIB di-register di sini (layer statis) agar TIDAK
+	// ter-intercept oleh logika isPrivatePath() yang mencegat /api/* dan /rest/*.
+	mux.Handle("/metrics", promhttp.Handler())
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		handleRequest(w, r, proxy)
 	})
 
-	log.Printf("[SIBYL-PROXY] Listening on %s → Target: %s → Brain: %s", proxyListenAddr, targetAppAddr, brainBaseURL)
+	slog.Info("SIBYL-PROXY: starting",
+		"listen", proxyListenAddr,
+		"target", targetAppAddr,
+		"brain", brainBaseURL,
+	)
 	if err := http.ListenAndServe(proxyListenAddr, mux); err != nil {
-		log.Fatalf("[FATAL] Server gagal start: %v", err)
+		slog.Error("server gagal start", "error", err)
+		os.Exit(1)
 	}
 }
 
@@ -125,13 +166,18 @@ func handleRequest(w http.ResponseWriter, r *http.Request, proxy *httputil.Rever
 	// Hanya intercept rute privat/sensitif (/api/*, /rest/*).
 	// Rute statis/publik langsung bypass tanpa evaluasi kognitif.
 	if !isPrivatePath(path) {
+		proxyRequestsTotal.WithLabelValues("bypass").Inc()
 		proxy.ServeHTTP(w, r)
 		return
 	}
 
 	// --- LAYER 1: Cek Global Blacklist (Tercepat) ---
 	if _, isBanned := globalBlacklist.Load(clientIP); isBanned {
-		log.Printf("[BLOCK] Blacklist hit → IP=%s Path=%s", clientIP, path)
+		proxyRequestsTotal.WithLabelValues("blacklist_hit").Inc()
+		slog.Warn("blacklist hit",
+			"client_ip", clientIP,
+			"path", path,
+		)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusForbidden)
 		fmt.Fprintf(w, `{"error":"HTTP 403 Forbidden: Evaluasi Kognitif Mendeteksi Ancaman Persisten.","client_ip":"%s"}`, clientIP)
@@ -142,6 +188,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request, proxy *httputil.Rever
 	if expiry, isCached := localCache.Load(clientIP); isCached {
 		if t, ok := expiry.(time.Time); ok && time.Now().Before(t) {
 			// Cache masih valid — bypass evaluasi.
+			proxyRequestsTotal.WithLabelValues("cache_hit").Inc()
 			proxy.ServeHTTP(w, r)
 			return
 		}
@@ -150,10 +197,20 @@ func handleRequest(w http.ResponseWriter, r *http.Request, proxy *httputil.Rever
 	}
 
 	// --- LAYER 3: Evaluasi Kognitif via Sibyl-Brain ---
+	evalStart := time.Now()
 	evalResult, err := evaluatePayload(r, clientIP)
+	evalDuration := time.Since(evalStart).Seconds()
+	proxyEvalLatency.Observe(evalDuration)
+
 	if err != nil {
 		// Fail-Closed: AI gagal/timeout → tolak request (TDD §1.3).
-		log.Printf("[FAIL-CLOSED] Evaluasi gagal → IP=%s Err=%v", clientIP, err)
+		proxyRequestsTotal.WithLabelValues("fail_closed").Inc()
+		slog.Error("evaluasi gagal, fail-closed",
+			"client_ip", clientIP,
+			"path", path,
+			"latency_s", evalDuration,
+			"error", err,
+		)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusServiceUnavailable)
 		fmt.Fprintf(w, `{"error":"HTTP 503: Mesin kognitif tidak merespons. Koneksi diputus demi keamanan.","client_ip":"%s"}`, clientIP)
@@ -163,7 +220,14 @@ func handleRequest(w http.ResponseWriter, r *http.Request, proxy *httputil.Rever
 	if evalResult.CrimeCoefficient >= ccThreshold {
 		// BAHAYA — blokir dan masukkan ke blacklist lokal instan.
 		globalBlacklist.Store(clientIP, true)
-		log.Printf("[BLOCK] Kognitif → IP=%s CC=%d Reason=%s", clientIP, evalResult.CrimeCoefficient, evalResult.Reason)
+		proxyRequestsTotal.WithLabelValues("blocked").Inc()
+		slog.Warn("BLOKIR",
+			"client_ip", clientIP,
+			"path", path,
+			"crime_coefficient", evalResult.CrimeCoefficient,
+			"reason", evalResult.Reason,
+			"latency_s", evalDuration,
+		)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode(map[string]any{
@@ -177,7 +241,13 @@ func handleRequest(w http.ResponseWriter, r *http.Request, proxy *httputil.Rever
 
 	// AMAN — cache IP dan teruskan ke target.
 	localCache.Store(clientIP, time.Now().Add(cacheTTL))
-	log.Printf("[PASS] AMAN → IP=%s CC=%d Path=%s", clientIP, evalResult.CrimeCoefficient, path)
+	proxyRequestsTotal.WithLabelValues("passed").Inc()
+	slog.Info("AMAN",
+		"client_ip", clientIP,
+		"path", path,
+		"crime_coefficient", evalResult.CrimeCoefficient,
+		"latency_s", evalDuration,
+	)
 	proxy.ServeHTTP(w, r)
 }
 
@@ -263,7 +333,7 @@ func startBlacklistSyncLoop() {
 	ticker := time.NewTicker(syncInterval)
 	defer ticker.Stop()
 
-	log.Printf("[SYNC] Blacklist sync loop dimulai (interval: %v)", syncInterval)
+	slog.Info("blacklist sync loop dimulai", "interval", syncInterval.String())
 
 	// Eksekusi langsung saat startup, jangan tunggu tick pertama.
 	syncBlacklist()
@@ -280,31 +350,31 @@ func syncBlacklist() {
 	blacklistURL := brainBaseURL + "/api/v1/blacklist"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, blacklistURL, nil)
 	if err != nil {
-		log.Printf("[SYNC] Gagal buat request: %v", err)
+		slog.Warn("sync: gagal buat request", "error", err)
 		return
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.Printf("[SYNC] Gagal fetch blacklist dari brain: %v", err)
+		slog.Warn("sync: gagal fetch blacklist", "error", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("[SYNC] Brain mengembalikan status %d", resp.StatusCode)
+		slog.Warn("sync: brain status non-OK", "status_code", resp.StatusCode)
 		return
 	}
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, maxBodySize))
 	if err != nil {
-		log.Printf("[SYNC] Gagal baca response body: %v", err)
+		slog.Warn("sync: gagal baca body", "error", err)
 		return
 	}
 
 	var blResp BlacklistResponse
 	if err := json.Unmarshal(body, &blResp); err != nil {
-		log.Printf("[SYNC] Gagal parse blacklist JSON: %v", err)
+		slog.Warn("sync: gagal parse JSON", "error", err)
 		return
 	}
 
@@ -319,7 +389,7 @@ func syncBlacklist() {
 	}
 
 	if newCount > 0 {
-		log.Printf("[SYNC] Blacklist diperbarui: +%d IP baru (total dari brain: %d)", newCount, blResp.Count)
+		slog.Info("blacklist diperbarui", "new_ips", newCount, "total_from_brain", blResp.Count)
 	}
 }
 
@@ -342,7 +412,7 @@ func startCacheEvictionLoop() {
 			return true
 		})
 		if evicted > 0 {
-			log.Printf("[CACHE] Evicted %d expired entries", evicted)
+			slog.Info("cache eviction", "evicted", evicted)
 		}
 	}
 }
