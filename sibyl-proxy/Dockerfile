@@ -1,7 +1,7 @@
 # ============================================================
 # STAGE 1: BUILD — Compile Sibyl-Proxy binary
 # ============================================================
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 RUN apk add --no-cache ca-certificates
 
