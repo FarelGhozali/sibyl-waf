@@ -24,14 +24,14 @@ jobs:
           cache: true
 
       - name: golangci-lint (Sibyl-Brain)
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
           working-directory: sibyl-brain
           args: --timeout=5m
 
       - name: golangci-lint (Sibyl-Proxy)
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
           working-directory: sibyl-proxy
