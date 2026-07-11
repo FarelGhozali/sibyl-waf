@@ -1,7 +1,7 @@
 # ============================================================
 # STAGE 1: BUILD — Compile Sibyl-Brain binary
 # ============================================================
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 RUN apk add --no-cache ca-certificates git
 
@@ -22,7 +22,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 # ============================================================
 # STAGE 2: RUNTIME — Image minimal untuk produksi
 # ============================================================
-FROM alpine:3.23
+FROM alpine:3.24
 
 # ca-certificates diperlukan untuk TLS ke Gemini API.
 RUN apk add --no-cache ca-certificates tzdata
