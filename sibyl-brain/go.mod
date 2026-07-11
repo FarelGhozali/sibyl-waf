@@ -3,7 +3,7 @@ module sibyl-brain
 go 1.25.10
 
 require (
-	github.com/go-chi/chi/v5 v5.3.0
+	github.com/go-chi/chi/v5 v5.3.1
 	github.com/google/generative-ai-go v0.20.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/valkey-io/valkey-go v1.0.75
