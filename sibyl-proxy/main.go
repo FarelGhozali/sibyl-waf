@@ -88,6 +88,15 @@ var localCache sync.Map
 // Key: string (IP), Value: bool (true = banned).
 var globalBlacklist sync.Map
 
+// bufferPool mendaur ulang array byte untuk membaca body request (Zero-Allocation).
+// Menghindari GC cycle berat saat menerima trafik ekstrem.
+var bufferPool = sync.Pool{
+	New: func() any {
+		b := make([]byte, maxBodySize)
+		return &b
+	},
+}
+
 // brainBaseURL adalah alamat Sibyl-Brain (Cloud Run).
 // Diambil dari env SIBYL_BRAIN_URL, default ke localhost:8080 untuk dev lokal.
 var brainBaseURL string
@@ -196,9 +205,31 @@ func handleRequest(w http.ResponseWriter, r *http.Request, proxy *httputil.Rever
 		localCache.Delete(clientIP)
 	}
 
+	// --- EKSTRAKSI PAYLOAD (MEMORY OPTIMIZATION) ---
+	var bodyStr string
+	if r.Body != nil {
+		// Pinjam buffer dari memori menggunakan sync.Pool dengan tipe pointer presisi
+		bufPtr := bufferPool.Get().(*[]byte)
+		// Pastikan buffer direset dan dikembalikan ke pool (setelah proxy.ServeHTTP selesai)
+		defer bufferPool.Put(bufPtr)
+
+		buffer := *bufPtr
+		// Baca body ke dalam buffer menggunakan io.LimitReader
+		n, err := io.ReadFull(io.LimitReader(r.Body, maxBodySize), buffer)
+		if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
+			slog.Error("gagal baca request body", "error", err)
+			http.Error(w, `{"error":"gagal baca body"}`, http.StatusBadRequest)
+			return
+		}
+
+		bodyStr = string(buffer[:n])
+		// Kembalikan isinya ke request aslinya menggunakan io.NopCloser
+		r.Body = io.NopCloser(bytes.NewReader(buffer[:n]))
+	}
+
 	// --- LAYER 3: Evaluasi Kognitif via Sibyl-Brain ---
 	evalStart := time.Now()
-	evalResult, err := evaluatePayload(r, clientIP)
+	evalResult, err := evaluatePayload(r, clientIP, bodyStr)
 	evalDuration := time.Since(evalStart).Seconds()
 	proxyEvalLatency.Observe(evalDuration)
 
@@ -255,21 +286,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request, proxy *httputil.Rever
 // EVALUASI PAYLOAD — HTTP POST ke Sibyl-Brain
 // ========================================================================
 
-func evaluatePayload(r *http.Request, clientIP string) (*EvalResponse, error) {
-	// Baca body dengan batas 2MB (heap protection).
-	var bodyStr string
-	if r.Body != nil {
-		limitedReader := io.LimitReader(r.Body, maxBodySize)
-		bodyBytes, err := io.ReadAll(limitedReader)
-		if err != nil {
-			return nil, fmt.Errorf("gagal baca request body: %w", err)
-		}
-		bodyStr = string(bodyBytes)
-
-		// Reconstruct body agar reverse proxy masih bisa membacanya nanti.
-		r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-	}
-
+func evaluatePayload(r *http.Request, clientIP string, bodyStr string) (*EvalResponse, error) {
 	// Ekstrak headers ke flat map.
 	headerMap := make(map[string]string, len(r.Header))
 	for key, vals := range r.Header {
