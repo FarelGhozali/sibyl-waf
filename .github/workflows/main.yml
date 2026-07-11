@@ -95,7 +95,7 @@ jobs:
         run: echo "REPO=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
 
       - name: Build and push Sibyl-Brain
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./sibyl-brain
           push: true
@@ -106,7 +106,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build and push Sibyl-Proxy
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./sibyl-proxy
           push: true
