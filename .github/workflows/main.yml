@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 env:
-  GO_VERSION: "1.25"
+  GO_VERSION: "1.25.12"
 
 jobs:
   lint-and-test:
@@ -21,7 +21,9 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: true
+          cache-dependency-path: |
+            sibyl-brain/go.sum
+            sibyl-proxy/go.sum
 
       - name: golangci-lint (Sibyl-Brain)
         uses: golangci/golangci-lint-action@v9
@@ -56,7 +58,9 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
-          cache: true
+          cache-dependency-path: |
+            sibyl-brain/go.sum
+            sibyl-proxy/go.sum
 
       - name: Install govulncheck
         run: go install golang.org/x/vuln/cmd/govulncheck@latest

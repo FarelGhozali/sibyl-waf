@@ -167,7 +167,7 @@ func HandlePayloadEvaluation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"payload terlalu besar atau tidak valid"}`, http.StatusRequestEntityTooLarge)
 		return
 	}
-	defer r.Body.Close()
+	defer func() { _ = r.Body.Close() }()
 
 	var req EvalRequest
 	if err := json.Unmarshal(body, &req); err != nil {
@@ -327,12 +327,12 @@ Tentukan Crime Coefficient dan berikan putusan.`, req.ClientIP, req.Method, req.
 
 	// Ekstrak teks dari response.
 	if resp == nil || len(resp.Candidates) == 0 {
-		return nil, fmt.Errorf("Gemini mengembalikan response kosong (0 candidates)")
+		return nil, fmt.Errorf("gemini mengembalikan response kosong (0 candidates)")
 	}
 
 	candidate := resp.Candidates[0]
 	if candidate.Content == nil || len(candidate.Content.Parts) == 0 {
-		return nil, fmt.Errorf("Gemini candidate tanpa content/parts")
+		return nil, fmt.Errorf("gemini candidate tanpa content/parts")
 	}
 
 	// Ambil part pertama dan cast ke genai.Text.

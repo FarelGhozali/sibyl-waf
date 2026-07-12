@@ -1,6 +1,6 @@
 module sibyl-proxy
 
-go 1.25.10
+go 1.25.12
 
 require github.com/prometheus/client_golang v1.23.2
 
