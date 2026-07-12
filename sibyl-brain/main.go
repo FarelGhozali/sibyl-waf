@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	"log/slog"
 	"net/http"
 	"os"
@@ -16,8 +15,8 @@ import (
 // File akan di-embed ke binary via go:embed sehingga tidak butuh filesystem saat runtime di Cloud Run.
 // Referensi tema: Terminal-Brutalism / Dominator HUD (lihat GEMINI.md §4).
 //
-//go:embed templates/*
-var dashboardTemplates embed.FS
+// //go:embed templates/*
+// var dashboardTemplates embed.FS
 
 // ========================================================================
 // PROMETHEUS METRICS — Didaftarkan sekali saat init(), thread-safe.
@@ -86,12 +85,12 @@ func main() {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("SIBYL-BRAIN: ONLINE"))
+		_, _ = w.Write([]byte("SIBYL-BRAIN: ONLINE"))
 	})
 	r.Get("/dashboard", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("TODO: Serve dashboard.html from embed.FS"))
+		_, _ = w.Write([]byte("TODO: Serve dashboard.html from embed.FS"))
 	})
 
 	slog.Info("SIBYL-BRAIN: starting", "port", port)

@@ -261,7 +261,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request, proxy *httputil.Rever
 		)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusForbidden)
-		json.NewEncoder(w).Encode(map[string]any{
+		_ = json.NewEncoder(w).Encode(map[string]any{
 			"error":             "HTTP 403 Forbidden: Sibyl-WAF Mendeteksi Niat Jahat.",
 			"crime_coefficient": evalResult.CrimeCoefficient,
 			"reason":            evalResult.Reason,

@@ -207,7 +207,7 @@ func HandlePayloadEvaluation(w http.ResponseWriter, r *http.Request) {
 		// Fail-Closed: jika AI gagal, tolak request demi keamanan (TDD §1.3).
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusServiceUnavailable)
-		json.NewEncoder(w).Encode(EvalResponse{
+		_ = json.NewEncoder(w).Encode(EvalResponse{
 			CrimeCoefficient: 100,
 			Status:           "BAHAYA",
 			Reason:           fmt.Sprintf("Fail-Closed: Mesin kognitif tidak merespons dalam batas waktu. Err: %v", err),
@@ -431,5 +431,5 @@ func HandleStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	json.NewEncoder(w).Encode(stats)
+	_ = json.NewEncoder(w).Encode(stats)
 }
