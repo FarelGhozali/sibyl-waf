@@ -189,7 +189,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request, proxy *httputil.Rever
 		)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w, `{"error":"HTTP 403 Forbidden: Evaluasi Kognitif Mendeteksi Ancaman Persisten.","client_ip":"%s"}`, clientIP)
+		_, _ = fmt.Fprintf(w, `{"error":"HTTP 403 Forbidden: Evaluasi Kognitif Mendeteksi Ancaman Persisten.","client_ip":"%s"}`, clientIP)
 		return
 	}
 
@@ -244,7 +244,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request, proxy *httputil.Rever
 		)
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusServiceUnavailable)
-		fmt.Fprintf(w, `{"error":"HTTP 503: Mesin kognitif tidak merespons. Koneksi diputus demi keamanan.","client_ip":"%s"}`, clientIP)
+		_, _ = fmt.Fprintf(w, `{"error":"HTTP 503: Mesin kognitif tidak merespons. Koneksi diputus demi keamanan.","client_ip":"%s"}`, clientIP)
 		return
 	}
 
@@ -321,7 +321,7 @@ func evaluatePayload(r *http.Request, clientIP string, bodyStr string) (*EvalRes
 	if err != nil {
 		return nil, fmt.Errorf("HTTP POST ke brain gagal: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Baca response body dengan limit proteksi.
 	respBody, err := io.ReadAll(io.LimitReader(resp.Body, maxBodySize))
@@ -376,7 +376,7 @@ func syncBlacklist() {
 		slog.Warn("sync: gagal fetch blacklist", "error", err)
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		slog.Warn("sync: brain status non-OK", "status_code", resp.StatusCode)
